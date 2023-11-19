@@ -1,4 +1,5 @@
 from __future__ import annotations
+
 import inspect
 import logging
 from functools import wraps
@@ -7,6 +8,7 @@ from typing import Callable, Type, TypeVar, Union
 loggerClass = logging.getLoggerClass()
 loggerType = Union[str, loggerClass, Callable]
 T = TypeVar('T', bound=Type)
+
 
 def on_new(logger: loggerType = "logger", level=logging.DEBUG, logargs=True, log_defaults=False,
            depth=0):
@@ -44,7 +46,8 @@ def on_new(logger: loggerType = "logger", level=logging.DEBUG, logargs=True, log
 
 
 def _get_logger(cls, logger: loggerType):
-    _logger = getattr(cls, logger) if isinstance(logger, str) \
+    # if string check first in class attributes else fetch from logging
+    _logger = getattr(cls, logger, logging.getLogger(logger)) if isinstance(logger, str) \
         else logger() if any([inspect.isfunction(logger), inspect.ismethod(logger)]) \
         else logger
 
