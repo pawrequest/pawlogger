@@ -15,9 +15,13 @@ def on_new(logger: Union[str, loggerClass, Callable] = "logger", level=logging.D
 
     def decorator[T](cls: type) -> T:
         original_new = cls.__new__
+        new_signature = inspect.signature(original_new)
 
         @wraps(original_new)
         def new_wrapper(cls, *args, **kwargs):
+            bound_arguments = new_signature.bind(cls, *args, **kwargs)
+            bound_arguments.apply_defaults()
+
             # Determine the appropriate logger
             if isinstance(logger, str):
                 # If logger is a string, use it as an attribute name to find the logger on the class
