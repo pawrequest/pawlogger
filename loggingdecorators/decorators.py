@@ -76,6 +76,7 @@ def on_init(logger: LOGGER_LIKE = "logger", level=logging.DEBUG, logargs=True, l
         @wraps(original_init)
         def init_wrapper(self, *args, **kwargs):
             _logger = _get_logger(self, logger)
+            result = original_init(self, *args, **kwargs)
 
             if logargs:
                 init_signature = inspect.signature(original_init)
@@ -88,7 +89,7 @@ def on_init(logger: LOGGER_LIKE = "logger", level=logging.DEBUG, logargs=True, l
             else:
                 _logger.log(level, f"init: {self.__class__.__name__}()", stacklevel=total_depth)
 
-            return original_init(self, *args, **kwargs)
+            return result
 
         if inspect.isclass(constructor):
             constructor.__init__ = init_wrapper
@@ -98,75 +99,6 @@ def on_init(logger: LOGGER_LIKE = "logger", level=logging.DEBUG, logargs=True, l
         return constructor
 
     return decorator
-
-
-# # def on_init(logger: LOGGER_LIKE = "logger", level=logging.DEBUG, logargs=True, depth=0):
-# def on_init(logger: LOGGER_LIKE = "logger", level=logging.DEBUG, logargs=True, logdefaults=False, depth=0):
-#     """
-#     When applied to a class or an __init__ method, decorate it with a wrapper which logs the __init__ call using the
-#     given logger at the specified level.
-#
-#     If "logger" is a string, look up an attribute of this name in the initialised object and use it to log the message.
-#     if there is no such attribute, get a logger with this name from the logging library and use it to log the message.
-#     If "logger" is a function, call it to obtain a reference to a logger instance.
-#     Otherwise, assume "logger" is an instance of a logger from the logging library and use it to log the message.
-#
-#     If logargs is True, the message contains the arguments passed to __init__.
-#
-#     If the decorated class or __init__ method is to be nested inside other decorators, increase the depth argument by 1
-#     for each additional level of nesting in order for the messages emitted to contain the correct source file name &
-#     line number.
-#     """
-#
-#     const_depth = 2
-#     total_depth = const_depth + depth
-#
-#     def decorator(constructor):
-#
-#         if not callable(constructor):
-#             raise TypeError(f"{constructor} does not appear to be callable.")
-#
-#         is_class = inspect.isclass(constructor)
-#
-#         to_call = getattr(constructor, "__init__") if is_class else constructor
-#
-#
-#         @wraps(constructor)
-#         def init_wrapper(self, *args, **kwargs):
-#             _logger = _get_logger(self, logger)
-#
-#             if logargs:
-#                 init_signature = inspect.signature(to_call)
-#                 bound_arguments = init_signature.bind(self, *args, **kwargs)
-#                 if logdefaults:
-#                     bound_arguments.apply_defaults()
-#
-#                 formatted_args = ', '.join(f"{k}={v}" for k, v in bound_arguments.arguments.items())
-#                 _logger.log(level, f"init: {self.__class__.__name__}({formatted_args})", stacklevel=total_depth)
-#             else:
-#                 _logger.log(level, f"init: {self.__class__.__name__}()", stacklevel=total_depth)
-#
-#             to_call(self, *args, **kwargs)
-#         #
-#         #
-#         # @wraps(constructor)
-#         # def init_wrapper(self, *args, **kwargs):
-#         #     _logger = _get_logger(self, logger)
-#         #
-#         #     if logargs:
-#         #         _logger.log(level, f"init: {self.__class__.__name__}({args=}, {kwargs=})", stacklevel=total_depth)
-#         #     else:
-#         #         _logger.log(level, f"init: {self.__class__.__name__}()", stacklevel=total_depth)
-#         #
-#         #     to_call(self, *args, **kwargs)
-#
-#         if is_class:
-#             setattr(constructor, "__init__", init_wrapper)
-#             return constructor
-#         else:
-#             return init_wrapper
-#
-#     return decorator
 
 
 def on_new(logger: LOGGER_LIKE = DFLT_LOGGER_STR, level=logging.DEBUG, logargs=True, logdefaults=False,
@@ -190,10 +122,18 @@ def on_new(logger: LOGGER_LIKE = DFLT_LOGGER_STR, level=logging.DEBUG, logargs=T
                 if logdefaults:
                     bound_arguments.apply_defaults()
 
-                formatted_args = ', '.join(f"{k}={v}" for k, v in bound_arguments.arguments.items())
+                formatted_args = ', '.join(f"{k}={v.__name__ if k == 'cls' and inspect.isclass(v) else v}"
+                                           for k, v in bound_arguments.arguments.items())
                 _logger.log(level, f"new: {cls.__name__}({formatted_args})", stacklevel=total_depth)
             else:
                 _logger.log(level, f"new: {cls.__name__}()", stacklevel=total_depth)
+
+            #
+            #
+            #     formatted_args = ', '.join(f"{k}={v}" for k, v in bound_arguments.arguments.items())
+            #     _logger.log(level, f"new: {cls.__name__}({formatted_args})", stacklevel=total_depth)
+            # else:
+            #     _logger.log(level, f"new: {cls.__name__}()", stacklevel=total_depth)
 
             # Call the original __new__ method
             return original_new(cls, *args, **kwargs)
