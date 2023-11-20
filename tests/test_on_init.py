@@ -25,7 +25,7 @@ def test_on_init_with_string_logger(caplog):
     decorated_test_class = apply_decorator(DummyClass, logger=DFLT_LOGGER_STR, logargs=True)
     with caplog.at_level(logging.DEBUG, logger=DFLT_LOGGER_STR):
         instance = decorated_test_class('arg1_value', arg2='arg2_value')  # noqa: F841
-    msg = caplog.messages[0]
+    msg = caplog.messages[-1]
 
     assert INIT_CLASS_MSG in msg
     assert 'arg1_value' in msg
@@ -37,7 +37,7 @@ def test_on_init_with_logger_instance(caplog, test_logger):
     decorated_test_class = apply_decorator(DummyClass, logger=test_logger, logargs=True)
     with caplog.at_level(logging.DEBUG, logger=test_logger.name):
         instance = decorated_test_class(ARG1)  # noqa: F841
-    msg = caplog.messages[0]
+    msg = caplog.messages[-1]
 
     assert INIT_CLASS_MSG in msg
     assert ARG1 in msg
@@ -48,7 +48,7 @@ def test_on_init_without_logargs(caplog, test_logger):
     decorated_test_class = apply_decorator(DummyClass, logger=test_logger.name, logargs=False)
     with caplog.at_level(logging.DEBUG, logger=test_logger.name):
         instance = decorated_test_class(ARG1, arg2=KWARG2)  # noqa: F841
-    msg = caplog.messages[0]
+    msg = caplog.messages[-1]
 
     assert INIT_CLASS_MSG in msg
     assert ARG1 not in msg
@@ -88,7 +88,7 @@ def test_on_init_with_depth(caplog, test_logger):
     with caplog.at_level(logging.DEBUG, logger=test_logger.name):
         instance = DummyClassDecorated(ARG1)  # noqa: F841
 
-    msg = caplog.messages[0]
+    msg = caplog.messages[-1]
 
     assert INIT_CLASS_MSG + 'Decorated' in msg
     assert ARG1 in msg
@@ -102,7 +102,7 @@ def test_on_init_with_callable_logger(caplog):
     with caplog.at_level(logging.DEBUG, logger='callable_logger'):
         instance = decorated_test_class('arg1_value')  # noqa: F841
 
-    msg = caplog.messages[0]
+    msg = caplog.messages[-1]
 
     assert INIT_CLASS_MSG in msg
     assert 'arg1_value' in msg
@@ -119,7 +119,7 @@ def test_on_init_with_class_attribute_logger(caplog, test_logger):
     with caplog.at_level(logging.DEBUG, logger=DummyClass.logger_attr.name):
         instance = decorated_test_class(ARG1)  # noqa: F841
 
-    msg = caplog.messages[0]
+    msg = caplog.messages[-1]
 
     assert INIT_CLASS_MSG in msg
     assert ARG1 in msg
@@ -134,7 +134,7 @@ def test_on_init_with_instance_attribute_logger(caplog, test_logger):
     with caplog.at_level(logging.DEBUG, logger='logger_attr'):
         instance = decorated_test_class(ARG1)  # noqa: F841
 
-    msg = caplog.messages[0]
+    msg = caplog.messages[-1]
     assert INIT_CLASS_MSG in msg
     assert ARG1 in msg
 
@@ -143,7 +143,7 @@ def test_on_init_log_defaults(caplog, test_logger):
     decorated_test_class = apply_decorator(DummyClass, logger=test_logger, logargs=True, logdefaults=True)
     with caplog.at_level(logging.DEBUG, logger=test_logger.name):
         instance = decorated_test_class(ARG1)  # noqa: F841
-    msg = caplog.messages[0]
+    msg = caplog.messages[-1]
 
     assert INIT_CLASS_MSG in msg
     assert ARG1 in msg

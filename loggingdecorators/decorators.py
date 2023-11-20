@@ -125,7 +125,10 @@ def on_init(logger: LOGGER_LIKE = "logger", level=logging.DEBUG, logargs=True, l
                 bound_arguments = init_signature.bind(self, *args, **kwargs)
                 bound_arguments.apply_defaults()
 
-                formatted_args = ', '.join(f"{k}={v}" for k, v in bound_arguments.arguments.items())
+                formatted_args = ', '.join(f"{k}={v.__class__.__name__ if k == 'self' and inspect.isclass(v) else v}"
+                                           for k, v in bound_arguments.arguments.items())
+
+                # formatted_args = ', '.join(f"{k}={v}" for k, v in bound_arguments.arguments.items())
                 _logger.log(level, f"init: {self.__class__.__name__}({formatted_args})", stacklevel=total_depth)
             else:
                 # Log only the class name when logargs is False
