@@ -5,12 +5,13 @@ import logging
 from functools import wraps
 from typing import Callable, Type, TypeVar, Union
 
+DFLT_LOGGER_STR = "logger"
 loggerClass = logging.getLoggerClass()
 loggerType = Union[str, loggerClass, Callable]
 T = TypeVar('T', bound=Type)
 
 
-def on_new(logger: loggerType = "logger", level=logging.DEBUG, logargs=True, log_defaults=False,
+def on_new(logger: loggerType = DFLT_LOGGER_STR, level=logging.DEBUG, logargs=True, logdefaults=False,
            depth=0):
     """
     Decorator for logging calls to a class's __new__ method.
@@ -28,7 +29,7 @@ def on_new(logger: loggerType = "logger", level=logging.DEBUG, logargs=True, log
             if logargs:
                 new_signature = inspect.signature(original_new)
                 bound_arguments = new_signature.bind(cls, *args, **kwargs)
-                if log_defaults:
+                if logdefaults:
                     bound_arguments.apply_defaults()
 
                 formatted_args = ', '.join(f"{k}={v}" for k, v in bound_arguments.arguments.items())
