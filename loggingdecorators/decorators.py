@@ -104,17 +104,17 @@ def on_init(logger: LOGGER_LIKE = "logger", level=logging.DEBUG, logargs=True, l
 
     def decorator(constructor):
         if inspect.isclass(constructor):
-            original_init = constructor.__init__
+            original_thing = constructor.__init__
         else:
-            original_init = constructor
+            original_thing = constructor
 
-        @wraps(original_init)
+        @wraps(original_thing)
         def init_wrapper(self, *args, **kwargs):
-            result = original_init(self, *args, **kwargs)
+            result = original_thing(self, *args, **kwargs)
             _logger = _get_logger(self, logger)
             classname = self.__class__.__name__
             if logargs:
-                log_with_args(_logger, args, classname, kwargs, self, original_init, logdefaults,
+                log_with_args(_logger, args, classname, kwargs, self, original_thing, logdefaults,
                               level, total_depth)
             else:
                 log_object(_logger, classname, level, total_depth, 'init')
@@ -140,18 +140,18 @@ def on_new(logger: LOGGER_LIKE = DFLT_LOGGER_STR, level=logging.DEBUG, logargs=T
     total_depth = const_depth + depth
 
     def decorator(cls: T) -> T:
-        original_new = cls.__new__
+        original_thing = cls.__new__
 
-        @wraps(original_new)
+        @wraps(original_thing)
         def new_wrapper(cls, *args, **kwargs):
             _logger = _get_logger(cls, logger)
             classname = cls.__name__
             if logargs:
-                log_with_args(_logger, args, classname, kwargs, cls, original_new, logdefaults,
+                log_with_args(_logger, args, classname, kwargs, cls, original_thing, logdefaults,
                               level, total_depth)
             else:
                 log_object(_logger, classname, level, total_depth, 'new')
-            return original_new(cls, *args, **kwargs)
+            return original_thing(cls, *args, **kwargs)
 
         setattr(cls, "__new__", new_wrapper)
         return cls
