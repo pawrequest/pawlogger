@@ -101,6 +101,13 @@ def on_call(logger: Union[LOGGER_CLASS, Callable], level=logging.DEBUG, logargs=
 #     return decorator
 
 
+def format_bound_args(bound_arguments, logdefaults):
+    if logdefaults:
+        bound_arguments.apply_defaults()
+    formatted_args = ', '.join(f"{k}={v.__class__.__name__ if k == 'self' or v == 'cls' else v}"
+                               for k, v in bound_arguments.arguments.items())
+    return formatted_args
+
 
 def on_init(logger: LOGGER_LIKE = "logger", level=logging.DEBUG, logargs=True, logdefaults=False, depth=0):
     """
@@ -120,19 +127,15 @@ def on_init(logger: LOGGER_LIKE = "logger", level=logging.DEBUG, logargs=True, l
             result = original_init(self, *args, **kwargs)
             _logger = _get_logger(self, logger)
 
+            classname = self.__class__.__name__
             if logargs:
                 init_signature = inspect.signature(original_init)
                 bound_arguments = init_signature.bind(self, *args, **kwargs)
-                bound_arguments.apply_defaults()
+                formatted_args = format_bound_args(bound_arguments, logdefaults)
 
-                formatted_args = ', '.join(f"{k}={v.__class__.__name__ if k == 'self' and inspect.isclass(v) else v}"
-                                           for k, v in bound_arguments.arguments.items())
-
-                # formatted_args = ', '.join(f"{k}={v}" for k, v in bound_arguments.arguments.items())
-                _logger.log(level, f"init: {self.__class__.__name__}({formatted_args})", stacklevel=total_depth)
+                _logger.log(level, f"init: {classname}({formatted_args})", stacklevel=total_depth)
             else:
-                # Log only the class name when logargs is False
-                _logger.log(level, f"init: {self.__class__.__name__}()", stacklevel=total_depth)
+                _logger.log(level, f"init: {classname}()", stacklevel=total_depth)
 
             return result
 
