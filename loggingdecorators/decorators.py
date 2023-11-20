@@ -39,13 +39,7 @@ def on_init(logger: Union[str, loggerClass, Callable] = "logger", level=logging.
 
         @wraps(constructor)
         def init_wrapper(self, *args, **kwargs):
-
-            _logger = getattr(self, logger) if isinstance(logger, str) \
-                else logger() if inspect.isfunction(logger) \
-                else logger
-
-            if not isinstance(_logger, loggerClass):
-                raise TypeError(f"logger argument had unexpected type {type(_logger)}, expected {loggerClass}")
+            _logger = _get_logger(self, logger)
 
             if logargs:
                 _logger.log(level, f"init: {self.__class__.__name__}({args=}, {kwargs=})", stacklevel=total_depth)
