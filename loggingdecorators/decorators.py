@@ -3,18 +3,70 @@ import logging
 from functools import wraps
 from typing import Callable, Type, TypeVar, Union
 
-loggerClass = logging.getLoggerClass()
+LOGGER_CLASS = logging.getLoggerClass()
 DFLT_LOGGER_STR = "logger"
-loggerType = Union[str, loggerClass, Callable]
+LOGGER_LIKE = Union[str, LOGGER_CLASS, Callable]
 T = TypeVar('T', bound=Type)
 
 
-def on_init(logger: Union[str, loggerClass, Callable] = "logger", level=logging.DEBUG, logargs=True, depth=0):
+def on_call(logger: Union[LOGGER_CLASS, Callable], level=logging.DEBUG, logargs=True, msg: str = "", depth=0):
+    """
+    When applied to a function, decorate it with a wrapper which logs the call using the given logger at the specified
+    level.
+
+    The "logger" argument must be an instance of a logger from the logging library, or a function which returns an
+    instance of a logger.
+
+    If logargs is True, log the function arguments, one per line.
+
+    If the decorated function is to be nested inside other decorators, increase the depth argument by 1 for each
+    additional level of nesting in order for the messages emitted to contain the correct source file name & line number.
+    """
+    const_depth = 2
+    total_depth = const_depth + depth
+
+    def decorator(func):
+
+        if not callable(func):
+            raise TypeError(f"{func} does not appear to be callable.")
+
+        if getattr(func, "__name__") == "__repr__":
+            raise RuntimeError("Cannot apply to __repr__ as this will cause infinite recursion!")
+
+        @wraps(func)
+        def wrapper(*args, **kwargs):
+
+            _logger = logger() if inspect.isfunction(logger) else logger
+
+            if not isinstance(_logger, LOGGER_CLASS):
+                raise TypeError(f"logger argument had unexpected type {type(_logger)}, expected {LOGGER_CLASS}")
+
+            content = f"calling {func.__name__} with {len(args)} arg(s) and {len(kwargs)} kwarg(s) "
+            if msg:
+                content = f"{content} ({msg})"
+            _logger.log(level, content, stacklevel=total_depth)
+            if logargs:
+                log_args(_logger, args, kwargs)
+            return func(*args, **kwargs)
+
+        def log_args(_logger, args, kwargs):
+            for n, arg in enumerate(args):
+                _logger.log(level, f" - arg {n:>2}: {type(arg)} {arg}", stacklevel=total_depth)
+            for m, (key, item) in enumerate(kwargs.items()):
+                _logger.log(level, f" - kwarg {m:>2}: {type(item)} {key}={item}", stacklevel=total_depth)
+
+        return wrapper
+
+    return decorator
+
+
+def on_init(logger: LOGGER_LIKE = "logger", level=logging.DEBUG, logargs=True, depth=0):
     """
     When applied to a class or an __init__ method, decorate it with a wrapper which logs the __init__ call using the
     given logger at the specified level.
 
     If "logger" is a string, look up an attribute of this name in the initialised object and use it to log the message.
+    if there is no such attribute, get a logger with this name from the logging library and use it to log the message.
     If "logger" is a function, call it to obtain a reference to a logger instance.
     Otherwise, assume "logger" is an instance of a logger from the logging library and use it to log the message.
 
@@ -57,56 +109,9 @@ def on_init(logger: Union[str, loggerClass, Callable] = "logger", level=logging.
     return decorator
 
 
-def on_call(logger: Union[loggerClass, Callable], level=logging.DEBUG, logargs=True, msg: str = "", depth=0):
-    """
-    When applied to a function, decorate it with a wrapper which logs the call using the given logger at the specified
-    level.
-
-    The "logger" argument must be an instance of a logger from the logging library, or a function which returns an
-    instance of a logger.
-
-    If logargs is True, log the function arguments, one per line.
-
-    If the decorated function is to be nested inside other decorators, increase the depth argument by 1 for each
-    additional level of nesting in order for the messages emitted to contain the correct source file name & line number.
-    """
-    const_depth = 2
-    total_depth = const_depth + depth
-
-    def decorator(func):
-
-        if not callable(func):
-            raise TypeError(f"{func} does not appear to be callable.")
-
-        if getattr(func, "__name__") == "__repr__":
-            raise RuntimeError("Cannot apply to __repr__ as this will cause infinite recursion!")
-
-        @wraps(func)
-        def wrapper(*args, **kwargs):
-
-            _logger = logger() if inspect.isfunction(logger) else logger
-
-            if not isinstance(_logger, loggerClass):
-                raise TypeError(f"logger argument had unexpected type {type(_logger)}, expected {loggerClass}")
-
-            content = f"calling {func} with {len(args)} arg(s) and {len(kwargs)} kwarg(s) "
-            if msg:
-                content = f"{content} ({msg})"
-            _logger.log(level, content, stacklevel=total_depth)
-            if logargs:
-                for n, arg in enumerate(args):
-                    _logger.log(level, f" - arg {n:>2}: {type(arg)} {arg}", stacklevel=total_depth)
-                for m, (key, item) in enumerate(kwargs.items()):
-                    _logger.log(level, f" - kwarg {m:>2}: {type(item)} {key}={item}", stacklevel=total_depth)
-            return func(*args, **kwargs)
-
-        return wrapper
-
-    return decorator
 
 
-
-def on_new(logger: loggerType = DFLT_LOGGER_STR, level=logging.DEBUG, logargs=True, logdefaults=False,
+def on_new(logger: LOGGER_LIKE = DFLT_LOGGER_STR, level=logging.DEBUG, logargs=True, logdefaults=False,
            depth=0):
     """
     Decorator for logging calls to a class's __new__ method.
@@ -141,11 +146,15 @@ def on_new(logger: loggerType = DFLT_LOGGER_STR, level=logging.DEBUG, logargs=Tr
     return decorator
 
 
-def _get_logger(cls, logger: loggerType):
-    _logger = getattr(cls, logger, logging.getLogger(logger)) if isinstance(logger, str) \
-        else logger() if any([inspect.isfunction(logger), inspect.ismethod(logger)]) \
-        else logger
 
-    if not isinstance(_logger, loggerClass):
-        raise TypeError(f"logger argument had unexpected type {type(_logger)}, expected {loggerClass}")
-    return _logger
+
+def _get_logger(cls_or_self, logger: LOGGER_LIKE):
+    if isinstance(logger, LOGGER_CLASS):
+        return logger
+    elif callable(logger):
+        return logger()
+    elif isinstance(logger, str):
+        return getattr(cls_or_self, logger, logging.getLogger(logger))
+    else:
+        raise TypeError(f"logger argument had unexpected type {type(logger)}, expected {LOGGER_CLASS}")
+
