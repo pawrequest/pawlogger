@@ -109,6 +109,11 @@ def format_bound_args(bound_arguments, logdefaults):
     return formatted_args
 
 
+def log_object(_logger, classname, level, depth, formatted_args=None):
+    formatted_args = formatted_args or ''
+    _logger.log(level, f"init: {classname}({formatted_args})", stacklevel=depth)
+
+
 def on_init(logger: LOGGER_LIKE = "logger", level=logging.DEBUG, logargs=True, logdefaults=False, depth=0):
     """
     Decorator for logging initialization calls to a class's __init__ method.
@@ -129,15 +134,21 @@ def on_init(logger: LOGGER_LIKE = "logger", level=logging.DEBUG, logargs=True, l
 
             classname = self.__class__.__name__
             if logargs:
-                init_signature = inspect.signature(original_init)
-                bound_arguments = init_signature.bind(self, *args, **kwargs)
+                bound_arguments = get_bound_args(args, kwargs, self)
                 formatted_args = format_bound_args(bound_arguments, logdefaults)
 
-                _logger.log(level, f"init: {classname}({formatted_args})", stacklevel=total_depth)
+                log_object(_logger, classname,  level,total_depth,formatted_args,)
             else:
-                _logger.log(level, f"init: {classname}()", stacklevel=total_depth)
+                log_object(_logger, classname, level, total_depth)
 
             return result
+
+
+
+        def get_bound_args(args, kwargs, self):
+            init_signature = inspect.signature(original_init)
+            bound_arguments = init_signature.bind(self, *args, **kwargs)
+            return bound_arguments
 
         if inspect.isclass(constructor):
             constructor.__init__ = init_wrapper
@@ -168,23 +179,12 @@ def on_new(logger: LOGGER_LIKE = DFLT_LOGGER_STR, level=logging.DEBUG, logargs=T
             if logargs:
                 new_signature = inspect.signature(original_new)
                 bound_arguments = new_signature.bind(cls, *args, **kwargs)
-                if logdefaults:
-                    bound_arguments.apply_defaults()
+                formatted_args = format_bound_args(bound_arguments, logdefaults)
 
-                formatted_args = ', '.join(f"{k}={v.__name__ if k == 'cls' and inspect.isclass(v) else v}"
-                                           for k, v in bound_arguments.arguments.items())
                 _logger.log(level, f"new: {cls.__name__}({formatted_args})", stacklevel=total_depth)
             else:
                 _logger.log(level, f"new: {cls.__name__}()", stacklevel=total_depth)
 
-            #
-            #
-            #     formatted_args = ', '.join(f"{k}={v}" for k, v in bound_arguments.arguments.items())
-            #     _logger.log(level, f"new: {cls.__name__}({formatted_args})", stacklevel=total_depth)
-            # else:
-            #     _logger.log(level, f"new: {cls.__name__}()", stacklevel=total_depth)
-
-            # Call the original __new__ method
             return original_new(cls, *args, **kwargs)
 
         setattr(cls, "__new__", new_wrapper)
