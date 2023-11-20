@@ -1,7 +1,7 @@
 [project]
 name = "loggingdecorators"
-version = "0.1.3"
-description = "NONE"
+version = "0.1.4"
+description = "forked by pawrequest to add on_new and tests"
 authors = [
     { name = "Adam Tuft", email = "adam.s.tuft@gmail.com" }
 ]
