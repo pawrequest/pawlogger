@@ -1,4 +1,5 @@
 # ruff: noqa: F841
+import copy
 import logging
 import uuid
 
@@ -21,18 +22,6 @@ def apply_decorator(cls, **decorator_kwargs):
     return decorated_class
 
 
-def test_default_dec(caplog):
-    decorated_test_class = apply_decorator(DummyClass)
-    with caplog.at_level(logging.DEBUG, logger=DFLT_LOGGER_STR):
-        instance = decorated_test_class(ARG1, kwarg2=KWARG2)  # noqa: F841
-    msg = caplog.records[0].msg
-
-    assert NEW_CLASS_MSG in msg
-    assert ARG1 in msg
-    assert KWARG2 in msg
-    assert DFLT_KWARG2 not in msg
-    assert DFLT_KWARG3 not in msg
-    caplog.clear()
 
 
 def test_with_logger_object(caplog, test_logger):
@@ -81,8 +70,26 @@ def test_log_defaults(caplog, test_logger):
     assert DFLT_KWARG3 in msg
 
 
+
+def test_default_dec(caplog, test_logger):
+    dummy = copy.copy(DummyClass)
+    decorated_test_class = apply_decorator(dummy)
+    with caplog.at_level(logging.DEBUG, logger=test_logger.name):
+        instance = decorated_test_class(ARG1, kwarg2=KWARG2)  # noqa: F841
+    msg = caplog.records[-1].msg
+
+    assert NEW_CLASS_MSG in msg
+    assert ARG1 in msg
+    assert KWARG2 in msg
+    assert DFLT_KWARG2 not in msg
+    assert DFLT_KWARG3 not in msg
+    caplog.clear()
+
+
+
 def test_invalid_logger(caplog, test_logger):
+    dummy = copy.copy(DummyClass)
     with pytest.raises(TypeError):
-        decorated_test_class = apply_decorator(DummyClass, logger=123)
+        decorated_test_class = apply_decorator(dummy, logger=123)
         with caplog.at_level(logging.DEBUG, logger=test_logger.name):
             instance = decorated_test_class(ARG1)  # noqa: F841
