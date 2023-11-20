@@ -1,6 +1,5 @@
 # tests_on_init.py
 import logging
-import uuid
 
 import pytest
 
@@ -16,16 +15,6 @@ class DummyClass:
 
 
 INIT_CLASS_MSG = f"init: {DummyClass.__name__}"
-
-
-@pytest.fixture
-def test_logger():
-    logger_name = "test_logger_" + str(uuid.uuid4())
-    logger = logging.getLogger(logger_name)
-    logger.setLevel(logging.DEBUG)
-    yield logger
-    logger.handlers.clear()
-    logger = None
 
 
 def apply_decorator(cls, **decorator_kwargs):

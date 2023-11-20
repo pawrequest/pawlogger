@@ -7,11 +7,7 @@ import pytest
 from loggingdecorators import on_new
 from loggingdecorators.decorators import DFLT_LOGGER_STR
 
-ARG1 = "value 1 for test"
-KWARG2 = "keyword value 2 for test"
-DFLT_KWARG2 = "default value kwarg 2"
-DFLT_KWARG3 = "default value kwarg 3"
-
+from tests.conftest import ARG1, KWARG2, DFLT_KWARG2, DFLT_KWARG3
 
 class DummyClass:
     def __new__(cls, arg1, kwarg2=DFLT_KWARG2, kwarg3=DFLT_KWARG3):
@@ -19,17 +15,6 @@ class DummyClass:
 
 
 NEW_CLASS_MSG = f"new: {DummyClass.__name__}"
-
-
-@pytest.fixture
-def test_logger():
-    logger_name = "test_logger_" + str(uuid.uuid4())
-    logger = logging.getLogger(logger_name)
-    logger.setLevel(logging.DEBUG)
-    yield logger
-    logger.handlers.clear()
-    logger = None
-
 
 def apply_decorator(cls, **decorator_kwargs):
     decorated_class = on_new(**decorator_kwargs)(cls)
