@@ -1,12 +1,15 @@
-from functools import wraps
-from typing import Union, Callable
-import logging
 import inspect
+import logging
+from functools import wraps
+from typing import Callable, Type, TypeVar, Union
 
 loggerClass = logging.getLoggerClass()
+DFLT_LOGGER_STR = "logger"
+loggerType = Union[str, loggerClass, Callable]
+T = TypeVar('T', bound=Type)
 
 
-def on_init(logger: Union[str, loggerClass, Callable]="logger", level=logging.DEBUG, logargs=True, depth=0):
+def on_init(logger: Union[str, loggerClass, Callable] = "logger", level=logging.DEBUG, logargs=True, depth=0):
     """
     When applied to a class or an __init__ method, decorate it with a wrapper which logs the __init__ call using the
     given logger at the specified level.
@@ -60,7 +63,7 @@ def on_init(logger: Union[str, loggerClass, Callable]="logger", level=logging.DE
     return decorator
 
 
-def on_call(logger: Union[loggerClass, Callable], level=logging.DEBUG, logargs=True, msg: str="", depth=0):
+def on_call(logger: Union[loggerClass, Callable], level=logging.DEBUG, logargs=True, msg: str = "", depth=0):
     """
     When applied to a function, decorate it with a wrapper which logs the call using the given logger at the specified
     level.
@@ -106,3 +109,49 @@ def on_call(logger: Union[loggerClass, Callable], level=logging.DEBUG, logargs=T
         return wrapper
 
     return decorator
+
+
+
+def on_new(logger: loggerType = DFLT_LOGGER_STR, level=logging.DEBUG, logargs=True, logdefaults=False,
+           depth=0):
+    """
+    Decorator for logging calls to a class's __new__ method.
+    """
+    const_depth = 2
+    total_depth = const_depth + depth
+
+    def decorator(cls: T) -> T:
+        original_new = cls.__new__
+
+        @wraps(original_new)
+        def new_wrapper(cls, *args, **kwargs):
+            _logger = _get_logger(cls, logger)
+
+            if logargs:
+                new_signature = inspect.signature(original_new)
+                bound_arguments = new_signature.bind(cls, *args, **kwargs)
+                if logdefaults:
+                    bound_arguments.apply_defaults()
+
+                formatted_args = ', '.join(f"{k}={v}" for k, v in bound_arguments.arguments.items())
+                _logger.log(level, f"new: {cls.__name__}({formatted_args})", stacklevel=total_depth)
+            else:
+                _logger.log(level, f"new: {cls.__name__}()", stacklevel=total_depth)
+
+            # Call the original __new__ method
+            return original_new(cls, *args, **kwargs)
+
+        setattr(cls, "__new__", new_wrapper)
+        return cls
+
+    return decorator
+
+
+def _get_logger(cls, logger: loggerType):
+    _logger = getattr(cls, logger, logging.getLogger(logger)) if isinstance(logger, str) \
+        else logger() if any([inspect.isfunction(logger), inspect.ismethod(logger)]) \
+        else logger
+
+    if not isinstance(_logger, loggerClass):
+        raise TypeError(f"logger argument had unexpected type {type(_logger)}, expected {loggerClass}")
+    return _logger
