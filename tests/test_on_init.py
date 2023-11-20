@@ -1,4 +1,3 @@
-# tests_on_init.py
 import logging
 
 import pytest
@@ -70,21 +69,6 @@ def test_on_init_with_exception(caplog, test_logger):
 
     msg = caplog.messages[0]
     assert INIT_CLASS_MSG in msg
-
-#
-# def test_on_init_with_exception(caplog, test_logger):
-#     class DummyClass:
-#         def __init__(self, arg1):
-#             raise ValueError("Init error")
-#
-#     decorated_test_class = apply_decorator(DummyClass, logger=test_logger, logargs=True)
-#     with caplog.at_level(logging.DEBUG, logger=test_logger.name):
-#         with pytest.raises(ValueError):
-#             instance = decorated_test_class(ARG1)  # noqa: F841
-#
-#     # msg = caplog.messages[0]
-#     # assert INIT_CLASS_MSG in msg
-#     # assert "Init error" in msg
 
 
 def test_on_init_with_depth(caplog, test_logger):
