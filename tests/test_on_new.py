@@ -33,6 +33,7 @@ def test_with_logger_object(caplog, test_logger):
     caplog.clear()
 
 
+
 def test_with_callable(caplog, test_logger):
     def logger_callable():
         return test_logger
