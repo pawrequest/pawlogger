@@ -47,7 +47,6 @@ def on_new(logger: loggerType = DFLT_LOGGER_STR, level=logging.DEBUG, logargs=Tr
 
 
 def _get_logger(cls, logger: loggerType):
-    # if string check first in class attributes else fetch from logging
     _logger = getattr(cls, logger, logging.getLogger(logger)) if isinstance(logger, str) \
         else logger() if any([inspect.isfunction(logger), inspect.ismethod(logger)]) \
         else logger
