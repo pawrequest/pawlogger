@@ -24,16 +24,15 @@ def test_logger(caplog):
     yield logger
 
 
-
 def apply_decorator(cls, **decorator_kwargs):
     decorated_class = on_new(**decorator_kwargs)(cls)
     return decorated_class
 
 
 def test_default_dec(caplog):
-    DecoratedTestClass = apply_decorator(TestClass)
+    decorated_test_class = apply_decorator(TestClass)
     with caplog.at_level(logging.DEBUG, logger=DFLT_LOGGER_STR):
-        instance = DecoratedTestClass(ARG1, kwarg2=KWARG2)
+        instance = decorated_test_class(ARG1, kwarg2=KWARG2)  # noqa: F841
     msg = caplog.records[0].msg
 
     assert "new: TestClass" in msg
@@ -44,16 +43,16 @@ def test_default_dec(caplog):
 
 
 def test_with_logger_object(caplog, test_logger):
-    DecoratedTestClass = apply_decorator(TestClass, logger=test_logger)
+    decorated_test_class = apply_decorator(TestClass, logger=test_logger)
     with caplog.at_level(logging.DEBUG, logger=test_logger.name):
-        instance = DecoratedTestClass(ARG1, kwarg2=KWARG2)
+        instance = decorated_test_class(ARG1, kwarg2=KWARG2)  # noqa: F841
     assert "new: TestClass" in caplog.records[0].msg
 
 
 def test_no_logargs(caplog, test_logger):
     caplog.clear()
-    DecoratedTestClass = apply_decorator(TestClass, logger=test_logger.name, logargs=False)
-    instance = DecoratedTestClass(ARG1, kwarg2=KWARG2)
+    decorated_test_class = apply_decorator(TestClass, logger=test_logger.name, logargs=False)
+    instance = decorated_test_class(ARG1, kwarg2=KWARG2)  # noqa: F841
     msg = caplog.records[0].msg
     assert "new: TestClass" in msg
     assert ARG1 not in msg
@@ -64,9 +63,9 @@ def test_no_logargs(caplog, test_logger):
 def test_log_defaults(caplog, test_logger):
     caplog.clear()
 
-    DecoratedTestClass = apply_decorator(TestClass, logger=test_logger, logargs=True, logdefaults=True)
+    decorated_test_class = apply_decorator(TestClass, logger=test_logger, logargs=True, logdefaults=True)
     with caplog.at_level(logging.DEBUG, logger=test_logger.name):
-        instance = DecoratedTestClass(ARG1)
+        instance = decorated_test_class(ARG1)  # noqa: F841
 
     assert "new: TestClass" in caplog.text
     assert ARG1 in caplog.text
@@ -78,15 +77,15 @@ def test_with_callable(caplog, test_logger):
     def logger_callable():
         return test_logger
 
-    DecoratedTestClass = apply_decorator(TestClass, logger=logger_callable)
+    decorated_test_class = apply_decorator(TestClass, logger=logger_callable)
     with caplog.at_level(logging.DEBUG, logger=test_logger.name):
-        instance = DecoratedTestClass(ARG1)
+        instance = decorated_test_class(ARG1)  # noqa: F841
 
     assert "new: TestClass" in caplog.text
 
 
 def test_invalid_logger(caplog, test_logger):
     with pytest.raises(TypeError):
-        DecoratedTestClass = apply_decorator(TestClass, logger=123)
+        decorated_test_class = apply_decorator(TestClass, logger=123)
         with caplog.at_level(logging.DEBUG, logger=test_logger.name):
-            instance = DecoratedTestClass(ARG1)
+            instance = decorated_test_class(ARG1)  # noqa: F841
