@@ -7,7 +7,7 @@ from typing import Callable, Union
 loggerClass = logging.getLoggerClass()
 loggerType = Union[str, loggerClass, Callable]
 
-def on_new(logger: loggerType = "logger", level=logging.DEBUG, logargs=True, log_defaults=False,
+def on_new(logger: loggerType = "logger", level=logging.DEBUG, logargs=True, logdefaults=False,
            depth=0):
     """
     Decorator for logging calls to a class's __new__ method.
@@ -25,7 +25,7 @@ def on_new(logger: loggerType = "logger", level=logging.DEBUG, logargs=True, log
             if logargs:
                 new_signature = inspect.signature(original_new)
                 bound_arguments = new_signature.bind(cls, *args, **kwargs)
-                if log_defaults:
+                if logdefaults:
                     bound_arguments.apply_defaults()
 
                 formatted_args = ', '.join(f"{k}={v}" for k, v in bound_arguments.arguments.items())
@@ -41,9 +41,8 @@ def on_new(logger: loggerType = "logger", level=logging.DEBUG, logargs=True, log
 
     return decorator
 
-
 def _get_logger(cls, logger: loggerType):
-    _logger = getattr(cls, logger) if isinstance(logger, str) \
+    _logger = getattr(cls, logger, logging.getLogger(logger)) if isinstance(logger, str) \
         else logger() if any([inspect.isfunction(logger), inspect.ismethod(logger)]) \
         else logger
 
