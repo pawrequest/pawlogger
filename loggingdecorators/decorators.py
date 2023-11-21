@@ -94,8 +94,12 @@ def log_with_args(_logger, args, classname, kwargs, cls_or_self, init_or_new, lo
     log_object(_logger, classname, level, depth, msg_prefix, formatted_args)
 
 
-def on_init(logger: LOGGER_LIKE = "logger", level=logging.DEBUG, logargs=True, logdefaults=False,
-            depth=0):
+def on_init(logger: LOGGER_LIKE = DFLT_LOGGER_STR,
+            level=logging.DEBUG,
+            logargs=True,
+            logdefaults=False,
+            depth=0
+            ):
     """
     Decorator for logging initialization calls to a class's __init__ method.
     """
@@ -109,10 +113,10 @@ def on_init(logger: LOGGER_LIKE = "logger", level=logging.DEBUG, logargs=True, l
             original_thing = constructor
 
         @wraps(original_thing)
-        def init_wrapper(self, *args, **kwargs):
-            result = original_thing(self, *args, **kwargs)
-            _logger = _get_logger(self, logger)
+        def wrapper(self, *args, **kwargs):
             classname = self.__class__.__name__
+            _logger = _get_logger(self, logger)
+            result = original_thing(self, *args, **kwargs)
             if logargs:
                 log_with_args(_logger, args, classname, kwargs, self, original_thing, logdefaults,
                               level, total_depth)
@@ -121,16 +125,17 @@ def on_init(logger: LOGGER_LIKE = "logger", level=logging.DEBUG, logargs=True, l
             return result
 
         if inspect.isclass(constructor):
-            constructor.__init__ = init_wrapper
+            constructor.__init__ = wrapper
         else:
-            constructor = init_wrapper
+            constructor = wrapper
 
         return constructor
-
     return decorator
 
 
-def on_new(logger: LOGGER_LIKE = DFLT_LOGGER_STR, level=logging.DEBUG, logargs=True,
+def on_new(logger: LOGGER_LIKE = DFLT_LOGGER_STR,
+           level=logging.DEBUG,
+           logargs=True,
            logdefaults=False,
            depth=0):
     """
@@ -139,13 +144,16 @@ def on_new(logger: LOGGER_LIKE = DFLT_LOGGER_STR, level=logging.DEBUG, logargs=T
     const_depth = 2
     total_depth = const_depth + depth
 
-    def decorator(cls: T) -> T:
-        original_thing = cls.__new__
+    def decorator(constructor):
+        if inspect.isclass(constructor):
+            original_thing = constructor.__new__
+        else:
+            original_thing = constructor
 
         @wraps(original_thing)
-        def new_wrapper(cls, *args, **kwargs):
+        def wrapper(cls, *args, **kwargs):
             _logger = _get_logger(cls, logger)
-            classname = cls.__name__
+            classname = cls.__name__ if inspect.isclass(cls) else cls.__class__.__name__
             if logargs:
                 log_with_args(_logger, args, classname, kwargs, cls, original_thing, logdefaults,
                               level, total_depth)
@@ -153,11 +161,14 @@ def on_new(logger: LOGGER_LIKE = DFLT_LOGGER_STR, level=logging.DEBUG, logargs=T
                 log_object(_logger, classname, level, total_depth, 'new')
             return original_thing(cls, *args, **kwargs)
 
-        setattr(cls, "__new__", new_wrapper)
-        return cls
+        if inspect.isclass(constructor):
+            setattr(constructor, "__new__", wrapper)
+        else:
+            constructor = wrapper
+
+        return constructor
 
     return decorator
-
 
 def _get_logger(cls_or_self, logger: LOGGER_LIKE):
     if isinstance(logger, LOGGER_CLASS):
@@ -169,3 +180,45 @@ def _get_logger(cls_or_self, logger: LOGGER_LIKE):
     else:
         raise TypeError(
             f"logger argument had unexpected type {type(logger)}, expected {LOGGER_CLASS}")
+
+
+def on_unified(logger: LOGGER_LIKE = DFLT_LOGGER_STR,
+               level=logging.DEBUG,
+               logargs=True,
+               logdefaults=False,
+               depth=0,
+               decorate_init=True,
+               decorate_new=False):
+    """
+    Unified decorator for logging calls to a class's __init__ and/or __new__ methods.
+    """
+    const_depth = 2
+    total_depth = const_depth + depth
+
+    def decorator(constructor):
+        if inspect.isclass(constructor):
+            original_init = constructor.__init__ if decorate_init else None
+            original_new = constructor.__new__ if decorate_new else None
+        else:
+            original_init = original_new = constructor if decorate_init or decorate_new else None
+
+        def wrap_function(original_function, msg_prefix):
+            @wraps(original_function)
+            def wrapper(*args, **kwargs):
+                _logger = _get_logger(args[0], logger)
+                classname = args[0].__class__.__name__ if msg_prefix == 'init' else args[0].__name__
+                if logargs:
+                    log_with_args(_logger, args, classname, kwargs, args[0], original_function, logdefaults, level, total_depth)
+                else:
+                    log_object(_logger, classname, level, total_depth, msg_prefix)
+                return original_function(*args, **kwargs)
+            return wrapper
+
+        if original_init:
+            constructor.__init__ = wrap_function(original_init, 'init')
+        if original_new:
+            setattr(constructor, '__new__', wrap_function(original_new, 'new'))
+
+        return constructor
+
+    return decorator

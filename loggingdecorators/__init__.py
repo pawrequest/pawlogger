@@ -1,7 +1,7 @@
 # ruff: noqa: F401
 import sys
 
-from .decorators import on_init, on_call, on_new
+from .decorators import on_init, on_call, on_new, on_unified
 
 # if sys.version_info >= (3, 12):
 #     from loggingdecorators.future.on_new_dec_312 import on_new

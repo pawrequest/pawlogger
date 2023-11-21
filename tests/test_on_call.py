@@ -5,7 +5,7 @@ import logging
 import pytest
 
 from loggingdecorators.decorators import on_call
-from tests.conftest import KWARG2
+from tests.conftest import ARG2
 
 
 ARG0_INT_10 = " - arg  0: <class 'int'> 10"
@@ -100,12 +100,12 @@ def test_on_call_with_complex_arguments(caplog, test_logger):
     complex_arg = {'key1': 1, 'key2': [1, 2, 3]}
 
     with caplog.at_level(logging.DEBUG, logger=test_logger.name):
-        decorated_dummy_function(complex_arg, 20, kwarg3=KWARG2)
+        decorated_dummy_function(complex_arg, 20, kwarg3=ARG2)
 
     assert caplog.messages[0] == f"calling {dummy.__name__} with 2 arg(s) and 1 kwarg(s) "
     assert caplog.messages[1] == f" - arg  0: <class 'dict'> {complex_arg}"
     assert caplog.messages[2] == ARG1_INT_20
-    assert caplog.messages[3] == f" - kwarg  0: <class 'str'> kwarg3={KWARG2}"
+    assert caplog.messages[3] == f" - kwarg  0: <class 'str'> kwarg3={ARG2}"
 
 
 def test_on_call_log_level(caplog, test_logger):

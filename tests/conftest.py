@@ -4,9 +4,9 @@ import uuid
 import pytest
 
 ARG1 = "value 1 for test"
-KWARG2 = "keyword value 2 for test"
-DFLT_KWARG2 = "default value kwarg 2"
-DFLT_KWARG3 = "default value kwarg 3"
+ARG2 = "value 2 for test"
+DFLT_ARG1 = "default value 1"
+DFLT_ARG2 = "default value 2"
 
 
 @pytest.fixture
@@ -17,3 +17,12 @@ def test_logger():
     yield logger
     logger.handlers.clear()
     logger = None
+
+
+class DummyClass:
+    def __init__(self, arg1, arg2=DFLT_ARG1):
+        self.arg1 = arg1
+        self.arg2 = arg2
+
+
+INIT_CLASS_MSG = f"init: {DummyClass.__name__}"

@@ -8,10 +8,10 @@ import pytest
 from loggingdecorators import on_new
 from loggingdecorators.decorators import DFLT_LOGGER_STR
 
-from tests.conftest import ARG1, KWARG2, DFLT_KWARG2, DFLT_KWARG3
+from tests.conftest import ARG1, ARG2, DFLT_ARG1, DFLT_ARG2
 
 class DummyClass:
-    def __new__(cls, arg1, kwarg2=DFLT_KWARG2, kwarg3=DFLT_KWARG3):
+    def __new__(cls, arg1, kwarg2=DFLT_ARG1, kwarg3=DFLT_ARG2):
         return super().__new__(cls)
 
 
@@ -27,7 +27,7 @@ def apply_decorator(cls, **decorator_kwargs):
 def test_with_logger_object(caplog, test_logger):
     decorated_test_class = apply_decorator(DummyClass, logger=test_logger)
     with caplog.at_level(logging.DEBUG, logger=test_logger.name):
-        instance = decorated_test_class(ARG1, kwarg2=KWARG2)  # noqa: F841
+        instance = decorated_test_class(ARG1, kwarg2=ARG2)  # noqa: F841
     msg = caplog.records[0].msg
     assert NEW_CLASS_MSG in msg
     caplog.clear()
@@ -51,13 +51,13 @@ def test_no_logargs(caplog, test_logger):
     caplog.clear()
     decorated_test_class = apply_decorator(DummyClass, logger=test_logger.name, logargs=False)
     with caplog.at_level(logging.DEBUG, logger=test_logger.name):
-        instance = decorated_test_class(ARG1, kwarg2=KWARG2)  # noqa: F841
+        instance = decorated_test_class(ARG1, kwarg2=ARG2)  # noqa: F841
     msg = caplog.records[0].msg
     assert NEW_CLASS_MSG in msg
     assert ARG1 not in msg
-    assert KWARG2 not in msg
-    assert DFLT_KWARG2 not in msg
-    assert DFLT_KWARG3 not in msg
+    assert ARG2 not in msg
+    assert DFLT_ARG1 not in msg
+    assert DFLT_ARG2 not in msg
     caplog.clear()
 
 
@@ -72,8 +72,8 @@ def test_log_defaults(caplog, test_logger):
     msg = caplog.records[0].msg
     assert NEW_CLASS_MSG in msg
     assert ARG1 in msg
-    assert DFLT_KWARG2 in msg
-    assert DFLT_KWARG3 in msg
+    assert DFLT_ARG1 in msg
+    assert DFLT_ARG2 in msg
     caplog.clear()
     caplog.messages.clear()
 
@@ -84,14 +84,14 @@ def test_default_dec(caplog, test_logger):
     dummy = copy.copy(DummyClass)
     decorated_test_class = apply_decorator(dummy)
     with caplog.at_level(logging.DEBUG, logger=test_logger.name):
-        instance = decorated_test_class(ARG1, kwarg2=KWARG2)  # noqa: F841
+        instance = decorated_test_class(ARG1, kwarg2=ARG2)  # noqa: F841
     msg = caplog.records[-1].msg
 
     assert NEW_CLASS_MSG in msg
     assert ARG1 in msg
-    assert KWARG2 in msg
-    assert DFLT_KWARG2 not in msg
-    assert DFLT_KWARG3 not in msg
+    assert ARG2 in msg
+    assert DFLT_ARG1 not in msg
+    assert DFLT_ARG2 not in msg
     caplog.clear()
 
 
