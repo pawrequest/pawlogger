@@ -16,16 +16,8 @@ def on_call(logger: LOGGER_LIKE, level=logging.DEBUG, logargs=True,
             logdefaults=False, msg: str = "",
             depth=0):
     """
-    When applied to a function, decorate it with a wrapper which logs the call using the given logger at the specified
-    level.
-
-    The "logger" argument must be an instance of a logger from the logging library, or a function which returns an
-    instance of a logger.
-
-    If logargs is True, log the function arguments, one per line.
-
-    If the decorated function is to be nested inside other decorators, increase the depth argument by 1 for each
-    additional level of nesting in order for the messages emitted to contain the correct source file name & line number.
+    Decorate a function with a wrapper which logs the call at the specified level.
+    Increase depth by 1 for each level of decorator nesting.
     """
     const_depth = 2
     total_depth = const_depth + depth
