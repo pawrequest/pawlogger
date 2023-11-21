@@ -1,34 +1,19 @@
 import logging
 
-from loggingdecorators import on_unified
-from tests.conftest import ARG1, DFLT_ARG1, ARG2
+from src.loggingdecorators import on_class
+from src.loggingdecorators.decorators import DFLT_LOGGER_STR
+from tests.conftest import ARG1, DFLT_ARG1, ARG2, DummyClass, INIT_MSG
 
 
-def apply_decorator(cls, **decorator_kwargs):
-    decorated_class = on_unified(**decorator_kwargs)(cls)
-    return decorated_class
-
-
-class TestClass:
-    def __init__(self, arg1, arg2='default_arg2'):
-        self.arg1 = arg1
-        self.arg2 = arg2
-
-    def __new__(cls, *args, **kwargs):
-        instance = super(TestClass, cls).__new__(cls)
-        # Additional __new__ logic here, if any
-        return instance
-
-
-@on_unified(logger=logging.getLogger("test"), logargs=True, decorate_init=True, decorate_new=False)
-def dummy_function(arg1, arg2='default_arg2'):
-    return arg1, arg2
-
-
-def test_basic_initialization():
-    decorated_class = apply_decorator(TestClass, logger=logging.getLogger("test"), logargs=True,
-                                      decorate_init=True, decorate_new=False)
-    instance = decorated_class('arg1', arg2='arg2')
+def test_dflts(caplog, test_logger):
+    with caplog.at_level(logging.DEBUG, logger=DFLT_LOGGER_STR):
+        dec_inst = on_class()(DummyClass(ARG1, kwarg2=ARG2))  # noqa: F841
+    msg = caplog.messages[-1]
+    assert INIT_MSG in msg
+    assert ARG1 in msg
+    assert ARG2 in msg
+    assert DFLT_ARG1 not in msg
+    caplog.clear()
     ...
 
 

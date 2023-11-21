@@ -36,7 +36,7 @@ line number.
 1. Applied directly to a user-defined class:
 
 ```python
-from loggingdecorators import on_init
+from src.loggingdecorators import on_init
 from logging import getLogger
 
 
@@ -57,7 +57,7 @@ class OtherWidget:
 2. Decorating a built-in class using a subclass:
 
 ```python
-from loggingdecorators import on_init
+from src.loggingdecorators import on_init
 from collections import defaultdict
 from logging import getLogger
 
@@ -74,7 +74,7 @@ all initialisations of that class to be logged, as this decorator replaces the c
 3. Decorating a class in a subclass with a mixin:
 
 ```python
-from loggingdecorators import on_init
+from src.loggingdecorators import on_init
 from logging import getLogger
 
 
@@ -87,8 +87,8 @@ class LoggingMixin:
     @on_init(logger=getLogger())
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        
-        
+
+
 class LoggingWidget(LoggingMixin, Widget):
     pass
 ```
@@ -119,12 +119,14 @@ additional level of nesting in order for the messages emitted to contain the cor
 1. Directly decorating a function:
 
 ```python
-from loggingdecorators import on_call
+from src.loggingdecorators import on_call
 from logging import getLogger
+
 
 @on_call(logger=getLogger())
 def interesting_function(*args, **kwargs):
     ...
+
 
 interesting_function()
 ```
@@ -132,11 +134,13 @@ interesting_function()
 2. Creating a logging version of another function:
 
 ```python
-from loggingdecorators import on_call
+from src.loggingdecorators import on_call
 from logging import getLogger
+
 
 def interesting_function(*args, **kwargs):
     ...
+
 
 decorator = on_call(logger=getLogger())
 interesting_function_log = decorator(interesting_function)

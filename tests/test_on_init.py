@@ -2,9 +2,9 @@ import logging
 
 import pytest
 
-from loggingdecorators import on_init
-from loggingdecorators.decorators import DFLT_LOGGER_STR
-from tests.conftest import ARG1, DFLT_ARG1, ARG2, DummyClass, INIT_CLASS_MSG
+from src.loggingdecorators import on_init
+from src.loggingdecorators.decorators import DFLT_LOGGER_STR
+from tests.conftest import ARG1, ARG2, DFLT_ARG1, DummyClass, INIT_MSG
 
 
 def apply_decorator(cls, **decorator_kwargs):
@@ -12,26 +12,54 @@ def apply_decorator(cls, **decorator_kwargs):
     return decorated_class
 
 
-def test_on_init_with_string_logger(caplog):
-    decorated_test_class = apply_decorator(DummyClass, logger=DFLT_LOGGER_STR, logargs=True)
+def test_on_init_dflt(caplog):
+    alogger = logging.getLogger(DFLT_LOGGER_STR)
     with caplog.at_level(logging.DEBUG, logger=DFLT_LOGGER_STR):
-        instance = decorated_test_class(ARG1, arg2=ARG2)  # noqa: F841
+        dec_inst = on_init()(DummyClass(ARG1, kwarg2=ARG2))  # noqa: F841
     msg = caplog.messages[-1]
-
-    assert INIT_CLASS_MSG in msg
+    assert INIT_MSG in msg
     assert ARG1 in msg
     assert ARG2 in msg
+    assert DFLT_ARG1 not in msg
+    caplog.clear()
+
+
+def test_on_init_with_string_logger2(caplog):
+    DecoratedClass = on_init()(DummyClass)
+    with caplog.at_level(logging.DEBUG, logger=DFLT_LOGGER_STR):
+        dec_inst = DecoratedClass(ARG1, kwarg2=ARG2)  # noqa: F841
+        ...
+
+    msg = caplog.messages[-1]
+    assert INIT_MSG in msg
+    assert ARG1 in msg
+    assert ARG2 in msg
+    assert DFLT_ARG1 not in msg
+    caplog.clear()
+
+
+
+def test_on_init_with_string_logger(caplog):
+    with caplog.at_level(logging.DEBUG, logger=DFLT_LOGGER_STR):
+        dec_inst = on_init(logger=DFLT_LOGGER_STR)(DummyClass(ARG1, kwarg2=ARG2))  # noqa: F841
+    msg = caplog.messages[-1]
+    assert INIT_MSG in msg
+    assert ARG1 in msg
+    assert ARG2 in msg
+    assert DFLT_ARG1 not in msg
     caplog.clear()
 
 
 def test_on_init_with_logger_instance(caplog, test_logger):
     decorated_test_class = apply_decorator(DummyClass, logger=test_logger, logargs=True)
     with caplog.at_level(logging.DEBUG, logger=test_logger.name):
-        instance = decorated_test_class(ARG1)  # noqa: F841
+        instance = decorated_test_class(ARG1, kwarg2=ARG2)  # noqa: F841
     msg = caplog.messages[-1]
 
-    assert INIT_CLASS_MSG in msg
+    assert INIT_MSG in msg
     assert ARG1 in msg
+    assert ARG2 in msg
+    assert DFLT_ARG1 not in msg
     caplog.clear()
 
 
@@ -41,9 +69,10 @@ def test_on_init_without_logargs(caplog, test_logger):
         instance = decorated_test_class(ARG1, arg2=ARG2)  # noqa: F841
     msg = caplog.messages[-1]
 
-    assert INIT_CLASS_MSG in msg
+    assert INIT_MSG in msg
     assert ARG1 not in msg
     assert ARG2 not in msg
+    assert DFLT_ARG1 not in msg
     caplog.clear()
 
 
@@ -56,7 +85,6 @@ def test_on_init_with_exception(caplog, test_logger):
     with caplog.at_level(logging.DEBUG, logger=test_logger.name):
         with pytest.raises(ValueError):
             instance = decorated_test_class(ARG1)  # noqa: F841
-
 
 
 def test_on_init_with_depth(caplog, test_logger):
@@ -81,7 +109,7 @@ def test_on_init_with_depth(caplog, test_logger):
 
     msg = caplog.messages[-1]
 
-    assert INIT_CLASS_MSG + 'Decorated' in msg
+    assert INIT_MSG + 'Decorated' in msg
     assert ARG1 in msg
 
 
@@ -95,7 +123,7 @@ def test_on_init_with_callable_logger(caplog):
 
     msg = caplog.messages[-1]
 
-    assert INIT_CLASS_MSG in msg
+    assert INIT_MSG in msg
     assert ARG1 in msg
 
 
@@ -112,7 +140,7 @@ def test_on_init_with_class_attribute_logger(caplog, test_logger):
 
     msg = caplog.messages[-1]
 
-    assert INIT_CLASS_MSG in msg
+    assert INIT_MSG in msg
     assert ARG1 in msg
 
 
@@ -126,17 +154,19 @@ def test_on_init_with_instance_attribute_logger(caplog, test_logger):
         instance = decorated_test_class(ARG1)  # noqa: F841
 
     msg = caplog.messages[-1]
-    assert INIT_CLASS_MSG in msg
+    assert INIT_MSG in msg
     assert ARG1 in msg
 
 
 def test_on_init_log_defaults(caplog, test_logger):
-    decorated_test_class = apply_decorator(DummyClass, logger=test_logger, logargs=True, logdefaults=True)
+    decorated_test_class = apply_decorator(DummyClass, logger=test_logger, logargs=True,
+                                           logdefaults=True)
+
     with caplog.at_level(logging.DEBUG, logger=test_logger.name):
         instance = decorated_test_class(ARG1)  # noqa: F841
     msg = caplog.messages[-1]
 
-    assert INIT_CLASS_MSG in msg
+    assert INIT_MSG in msg
     assert ARG1 in msg
     assert f"arg2={DFLT_ARG1}" in msg
     caplog.clear()
