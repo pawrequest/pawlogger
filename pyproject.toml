@@ -1,13 +1,15 @@
 [project]
-name = "loggingdecorators"
-version = "0.1.4"
-description = "forked by pawrequest to add on_new and tests"
+name = "pawlogger"
+version = "0.0.0"
+description = "pawrequests logging tools"
 authors = [
-    { name = "Adam Tuft", email = "adam.s.tuft@gmail.com" }
+    { name = "Paw", email = "pawrequest@github.com" }
 ]
-dependencies = []
+dependencies = [
+    "pycommence @ file:///C:/psdev/pycommence",
+]
 readme = "README.md"
-requires-python = ">= 3.8"
+requires-python = ">= 3.12"
 
 [build-system]
 requires = ["hatchling"]
