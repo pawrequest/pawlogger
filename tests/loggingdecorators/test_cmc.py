@@ -1,14 +1,10 @@
-import logging
-import os
 from pathlib import Path
-
-import pytest
 
 import pycommence.wrapper.cmc_db
 from pycommence import api
 
-from src.loggingdecorators import on_class
-from src.pawlogger.logger_config import configure_logging
+from pawlogger import on_class
+from pawlogger import configure_logging
 
 
 

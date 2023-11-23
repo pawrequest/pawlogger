@@ -7,7 +7,7 @@ import pytest
 
 import logger_factory
 from pawlogger.consts import ASCTIME_PATTERN
-from src.pawlogger.logger_config import configure_logging
+from pawlogger import configure_logging
 
 test_params = [
     (logging.DEBUG, "Debug message", "DEBUG", [42]),

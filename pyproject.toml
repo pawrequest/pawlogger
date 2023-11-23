@@ -6,7 +6,7 @@ authors = [
     { name = "Paw", email = "pawrequest@github.com" }
 ]
 dependencies = [
-    "pycommence @ file:///C:/psdev/pycommence",
+    "pycommence @ file:///C:/prdev/pycommence",
 ]
 readme = "README.md"
 requires-python = ">= 3.12"

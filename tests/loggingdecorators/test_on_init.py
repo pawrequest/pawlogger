@@ -2,8 +2,8 @@ import logging
 
 import pytest
 
-from src.loggingdecorators import on_init
-from src.loggingdecorators.consts_formats import DFLT_LOGGER_STR, DFLT_LOG_LEVEL
+from pawlogger import on_init
+from pawlogger import DFLT_LOGGER_STR, DFLT_LOG_LEVEL
 from tests.loggingdecorators.conftest import ARG1, ARG2, DFLT_ARG1, DummyClass
 
 

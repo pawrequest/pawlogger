@@ -3,7 +3,7 @@ import uuid
 
 import pytest
 
-from src.loggingdecorators.consts_formats import DFLT_LOG_LEVEL
+from pawlogger import DFLT_LOG_LEVEL
 
 ARG1 = "value 1 for test"
 ARG2 = "value 2 for test"

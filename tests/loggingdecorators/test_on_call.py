@@ -3,8 +3,8 @@ import logging
 
 import pytest
 
-from src.loggingdecorators.consts_formats import DFLT_LOGGER_STR, DFLT_LOG_LEVEL, build_log_msg
-from src.loggingdecorators.decorators import on_call
+from pawlogger import DFLT_LOGGER_STR, DFLT_LOG_LEVEL, build_log_msg
+from pawlogger.loggingdecorators.decorators import on_call
 from tests.loggingdecorators.conftest import ARG1, ARG2, dummy_func, dummy_func_kwargs, dummy_func_noargs
 
 
