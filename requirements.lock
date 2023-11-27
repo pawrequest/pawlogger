@@ -7,5 +7,3 @@
 #   all-features: false
 
 -e file:.
-pycommence @ file:///C:/prdev/pycommence
-pywin32==306
