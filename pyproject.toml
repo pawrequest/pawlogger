@@ -1,0 +1,27 @@
+[project]
+name = "pawlogger"
+version = "0.1.0"
+description = "Add your description here"
+authors = [
+    { name = "paw", email = "pawrequest@users.noreply.github.com" }
+]
+readme = "README.md"
+requires-python = ">= 3.8"
+dependencies = []
+[optional-dependencies]
+loguru = [
+    'loguru',
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.rye]
+managed = true
+dev-dependencies = [
+    'loguru',
+]
+
+[tool.hatch.metadata]
+allow-direct-references = true
