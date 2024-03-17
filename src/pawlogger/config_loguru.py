@@ -44,7 +44,7 @@ BOT_COLOR = {
 }
 
 
-def log_fmt_local_terminal(record: logging.LogRecord) -> str:
+def log_fmt_local_terminal(record) -> str:
     """
     Format for local logging
 
@@ -75,7 +75,7 @@ def coloured(msg: str, colour: str) -> str:
     return f'<{colour}>{msg}</{colour}>'
 
 
-def log_fmt_server_terminal(record: logging.LogRecord) -> str:
+def log_fmt_server_terminal(record) -> str:
     """
     Format for server-side logging
 
@@ -109,7 +109,7 @@ def logger_wraps(*, entry=True, exit=True, level='DEBUG') -> callable:
         def wrapped(*args, **kwargs):
             logger_ = logger.opt(depth=1)
             if entry:
-                logger_.log(level, "Entering '{}' (args={}, kwargs={})", name, args, kwargs)
+                logger_.log(level, f"Entering '{name}' (args={args}, kwargs={kwargs})")
             result = func(*args, **kwargs)
             if exit:
                 logger_.log(level, "Exiting '{}' (result={})", name, result)

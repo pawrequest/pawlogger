@@ -4,10 +4,10 @@ logging configuration for builtin logger
 import inspect
 import logging
 
-from .consts import CONSOLE_FORMAT_STR, FILE_FORMAT_STR
+from . import consts
 
 
-def configure_logging(logger_name=None, log_file=None, level=logging.DEBUG):
+def get_logger(logger_name=None, log_file=None, level=logging.DEBUG):
     """
     Configure logging
 
@@ -30,8 +30,8 @@ def configure_logging(logger_name=None, log_file=None, level=logging.DEBUG):
     file_handler = logging.FileHandler(log_file)
     console_handler = logging.StreamHandler()
 
-    file_formatter = logging.Formatter(FILE_FORMAT_STR, style='{')
-    console_formatter = logging.Formatter(CONSOLE_FORMAT_STR, style='{')
+    file_formatter = logging.Formatter(consts.FILE_FORMAT_STR, style='{')
+    console_formatter = logging.Formatter(consts.CONSOLE_FORMAT_STR, style='{')
 
     file_handler.setFormatter(file_formatter)
     console_handler.setFormatter(console_formatter)

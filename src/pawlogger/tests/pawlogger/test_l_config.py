@@ -7,7 +7,7 @@ import pytest
 
 import logger_factory
 from pawlogger.consts import ASCTIME_PATTERN
-from pawlogger import configure_logging
+from pawlogger import get_logger
 
 test_params = [
     (logging.DEBUG, "Debug message", "DEBUG", [42]),
@@ -21,7 +21,7 @@ test_params = [
 @pytest.mark.parametrize("log_level, log_message, level_name, format_args", test_params)
 def test_logging(caplog, tmp_path: Path, log_level, log_message, level_name, format_args):
     log_file = tmp_path / "test.log"
-    logger = configure_logging(str(log_file.name), level=log_level, log_file=log_file)
+    logger = get_logger(str(log_file.name), level=log_level, log_file=log_file)
     logger.log(log_level, log_message.format(*format_args))
 
     formatted_message = log_message.format(*format_args)
@@ -46,7 +46,7 @@ def logger_from_factory(tmp_path: Path):
 def test_logging_from_different_sources(caplog, tmp_path: Path, logger_from_factory):
     # Logger from the test module
     log_file_test = tmp_path / "test_logger.log"
-    logger_test = configure_logging(log_file=str(log_file_test))
+    logger_test = get_logger(log_file=str(log_file_test))
 
     # Log a message from the test module logger
     test_message = "Log message from test module"
