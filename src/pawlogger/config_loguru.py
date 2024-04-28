@@ -1,10 +1,10 @@
 from __future__ import annotations
 
 import functools
-import logging
 import sys
 from typing import Literal
 
+import loguru
 from loguru import logger
 
 """
@@ -43,25 +43,43 @@ BOT_COLOR = {
     'Backup': 'magenta',
 }
 
+# def log_fmt_local_terminal(record) -> str:
+#     """
+#     Format for local logging
+# 
+#     :param record: log record
+#     :return: formatted log record
+#     """
+#     category = record['extra'].get('category', 'General')
+#     bot_colour = BOT_COLOR.get(category, 'white')
+#     category = f'{category:<9}'
+#     max_length = 100
+#     file_txt = f"{record['file'].path}:{record['line']}"
+# 
+#     if len(file_txt) > max_length:
+#         file_txt = file_txt[:max_length]
+# 
+#     # clickable link only works at start of line
+#     return f"{file_txt:<{max_length}} | <lvl>{record['level']: <7} | {coloured(category, bot_colour)} | {record['message']}</lvl>\n"
+CAT_COLOR = {
+    'episode': 'cyan',
+    'reddit': 'green',
+    'backup': 'magenta',
+}
 
-def log_fmt_local_terminal(record) -> str:
-    """
-    Format for local logging
 
-    :param record: log record
-    :return: formatted log record
-    """
-    category = record['extra'].get('category', 'General')
-    bot_colour = BOT_COLOR.get(category, 'white')
-    category = f'{category:<9}'
-    max_length = 100
+def log_fmt_local_terminal(record: loguru.Record) -> str:
     file_txt = f"{record['file'].path}:{record['line']}"
 
-    if len(file_txt) > max_length:
-        file_txt = file_txt[:max_length]
+    category = record['extra'].get('category', 'General')
+    category_txt = f'{category.title():<9}'
 
-    # clickable link only works at start of line
-    return f"{file_txt:<{max_length}} | <lvl>{record['level']: <7} | {coloured(category, bot_colour)} | {record['message']}</lvl>\n"
+    color = CAT_COLOR.get(category.lower(), 'white')
+    category_txt = f'| {coloured(category_txt, color)}' if category_txt != 'General' else ''
+    lvltext = f'<lvl>{record['level']: <7}</lvl>'
+    msg_txt = f'<lvl>{record['message']}</lvl>'
+    # msg_txt = f'{record['message']}'
+    return f'{lvltext} {category_txt} | {msg_txt} | {file_txt}\n'
 
 
 def coloured(msg: str, colour: str) -> str:
