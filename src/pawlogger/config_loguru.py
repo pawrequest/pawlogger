@@ -80,6 +80,7 @@ def log_fmt_local_terminal(record: loguru.Record) -> str:
     category_txt = f'| {coloured(category_txt, color)}' if category_txt != 'General' else ''
     lvltext = f'<lvl>{record['level']: <7}</lvl>'
     msg_txt = f'<lvl>{record['message']}</lvl>'
+    msg_txt = msg_txt.replace('{{', '{').replace('}}', '}')
     # msg_txt = f'{record['message']}'
     return f'{lvltext} {category_txt} | {msg_txt} | {file_txt}\n'
 
