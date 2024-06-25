@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import functools
 import sys
+from pathlib import Path
 from typing import Literal
 
 import loguru
@@ -18,7 +19,9 @@ CAT_COLOR_DICT = {
 
 
 def get_loguru(
-        log_file, profile: Literal['local', 'remote', 'default'] = 'local',
+        level: str = 'INFO',
+        log_file : Path | None = None,
+        profile: Literal['local', 'remote', 'default'] = 'local',
         color_dict: dict | None = None
 ) -> logger:
     """
@@ -44,8 +47,10 @@ def get_loguru(
 
     logger.remove()
 
-    logger.add(log_file, rotation='1 day', delay=True, encoding='utf8')
-    logger.add(sys.stderr, level='DEBUG', format=terminal_format)
+    lvl = level.upper()
+    if log_file:
+        logger.add(log_file, rotation='1 day', delay=True, encoding='utf8', level=lvl)
+    logger.add(sys.stderr, level=lvl, format=terminal_format)
 
     return logger
 
