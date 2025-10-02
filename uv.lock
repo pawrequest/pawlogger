@@ -28,15 +28,12 @@ wheels = [
 name = "pawlogger"
 version = "0.1.0"
 source = { editable = "." }
-
-[package.optional-dependencies]
-loguru = [
+dependencies = [
     { name = "loguru" },
 ]
 
 [package.metadata]
-requires-dist = [{ name = "loguru", marker = "extra == 'loguru'" }]
-provides-extras = ["loguru"]
+requires-dist = [{ name = "loguru" }]
 
 [[package]]
 name = "win32-setctime"
