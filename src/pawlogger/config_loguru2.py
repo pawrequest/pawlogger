@@ -9,9 +9,9 @@ import loguru
 
 
 def configure_loguru(
-        logger_: loguru.Logger,
-        level: str = 'INFO',
-        log_file: Path | None = None,
+    logger_: loguru.Logger,
+    level: str = 'INFO',
+    log_file: Path | None = None,
 ) -> loguru.Logger:
     logger_.remove()
     lvl = level.upper()
@@ -23,9 +23,9 @@ def configure_loguru(
 
 
 def log_fmt_local_terminal(record: loguru.Record) -> str:
-    file_txt = f"{record['file'].path}:{record['line']}"
-    lvltext = f'<lvl>{record['level']: <7}</lvl>'
-    msg_txt = f'<lvl>{record['message']}</lvl>'
+    file_txt = f'{record["file"].path}:{record["line"]}'
+    lvltext = f'<lvl>{record["level"]: <7}</lvl>'
+    msg_txt = f'<lvl>{record["message"]}</lvl>'
     msg_txt = msg_txt.replace('{', '{{').replace('}', '}}')
     # msg_txt = f'{record['message']}'
     return f'{file_txt} | {lvltext} | {msg_txt} \n'

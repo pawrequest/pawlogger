@@ -5,7 +5,7 @@ build-backend = "uv_build"
 
 [project]
 name = "pawlogger"
-version = "0.1.0"
+version = "0.1.2"
 description = "logging tools"
 authors = [
     { name = "paw", email = "pawrequest@users.noreply.github.com" }

@@ -2,16 +2,20 @@ import inspect
 import logging
 from functools import wraps
 
-from .consts_formats import DFLT_LOGGER_STR, LOGGER_CLASS, LOGGER_LIKE, \
-    build_log_msg
+from .consts_formats import DFLT_LOGGER_STR, LOGGER_CLASS, LOGGER_LIKE, build_log_msg
 
 
 # from src.pawlogger.legacy import log_object
 
 
-def on_call(logger: LOGGER_LIKE, level=logging.DEBUG, logargs=True,
-            logdefaults=False, msg: str = "",
-            depth=0):
+def on_call(
+    logger: LOGGER_LIKE,
+    level=logging.DEBUG,
+    logargs=True,
+    logdefaults=False,
+    msg: str = '',
+    depth=0,
+):
     """
     Decorate a function with a wrapper which logs the call at the specified level.
     Increase depth by 1 for each level of decorator nesting.
@@ -22,10 +26,10 @@ def on_call(logger: LOGGER_LIKE, level=logging.DEBUG, logargs=True,
     def decorator(func):
 
         if not callable(func):
-            raise TypeError(f"{func} does not appear to be callable.")
+            raise TypeError(f'{func} does not appear to be callable.')
 
-        if getattr(func, "__name__") == "__repr__":
-            raise RuntimeError("Cannot apply to __repr__ as this will cause infinite recursion!")
+        if getattr(func, '__name__') == '__repr__':
+            raise RuntimeError('Cannot apply to __repr__ as this will cause infinite recursion!')
 
         @wraps(func)
         def wrapper(*args, **kwargs):
@@ -34,12 +38,21 @@ def on_call(logger: LOGGER_LIKE, level=logging.DEBUG, logargs=True,
 
             if not isinstance(_logger, LOGGER_CLASS):
                 raise TypeError(
-                    f"logger argument had unexpected type {type(_logger)}, expected {LOGGER_CLASS}")
+                    f'logger argument had unexpected type {type(_logger)}, expected {LOGGER_CLASS}'
+                )
 
             result = func(*args, **kwargs)
             if logargs:
-                log_agnostic(_logger, func, level, total_depth, logargs=logargs, args=args,
-                             kwargs=kwargs, logdefaults=logdefaults)
+                log_agnostic(
+                    _logger,
+                    func,
+                    level,
+                    total_depth,
+                    logargs=logargs,
+                    args=args,
+                    kwargs=kwargs,
+                    logdefaults=logdefaults,
+                )
             else:
                 log_agnostic(_logger, func, level, logargs=False, depth=total_depth)
             return result
@@ -96,13 +109,15 @@ def on_call(logger: LOGGER_LIKE, level=logging.DEBUG, logargs=True,
 #
 #     return decorator
 #
-def on_class[T](logger: LOGGER_LIKE = DFLT_LOGGER_STR,
-                level=logging.DEBUG,
-                logargs=True,
-                logdefaults=False,
-                depth=0,
-                decorate_init=True,
-                decorate_new=False) -> T:
+def on_class[T](
+    logger: LOGGER_LIKE = DFLT_LOGGER_STR,
+    level=logging.DEBUG,
+    logargs=True,
+    logdefaults=False,
+    depth=0,
+    decorate_init=True,
+    decorate_new=False,
+) -> T:
     """
     Decorator for logging calls to a class's __init__ and/or __new__ methods.
     If decorate_init is True, replace the class __init__ method with a wrapped version.
@@ -111,18 +126,20 @@ def on_class[T](logger: LOGGER_LIKE = DFLT_LOGGER_STR,
 
     def decorator(cls):
         if not inspect.isclass(cls):
-            raise TypeError("on_class decorator can only be applied to classes.")
+            raise TypeError('on_class decorator can only be applied to classes.')
 
         if decorate_init and hasattr(cls, '__init__'):
             original_init = cls.__init__
             wrapped_init = on_call(logger, level, logargs, logdefaults, depth=depth + 1)(
-                original_init)
+                original_init
+            )
             cls.__init__ = wrapped_init
 
         if decorate_new and hasattr(cls, '__new__'):
             original_new = cls.__new__
             wrapped_new = on_call(logger, level, logargs, logdefaults, depth=depth + 1)(
-                original_new)
+                original_new
+            )
             cls.__new__ = wrapped_new
 
         return cls
@@ -150,15 +167,24 @@ def get_bound(obj, use_new=False, logdefault=False, args=None, kwargs=None):
     return bound_arguments
 
 
-def log_agnostic(_logger, obj, level, depth, args=None, kwargs=None, logargs=True,
-                 logdefaults=False,
-                 use_new=False):
+def log_agnostic(
+    _logger,
+    obj,
+    level,
+    depth,
+    args=None,
+    kwargs=None,
+    logargs=True,
+    logdefaults=False,
+    use_new=False,
+):
     if logargs and args is None:
-        raise ValueError("if logargs then provide them")
+        raise ValueError('if logargs then provide them')
     args, kwargs = args or (), kwargs or {}
     if logargs:
-        bound_arguments = get_bound(obj=obj, use_new=use_new, logdefault=logdefaults, args=args,
-                                    kwargs=kwargs)
+        bound_arguments = get_bound(
+            obj=obj, use_new=use_new, logdefault=logdefaults, args=args, kwargs=kwargs
+        )
         log_msg = build_log_msg(obj, args=bound_arguments.arguments, use_new=use_new)
     else:
         log_msg = build_log_msg(obj, logargs=False, use_new=use_new)
@@ -180,7 +206,8 @@ def _get_logger(objec, loggerlike: LOGGER_LIKE):
 
     else:
         raise TypeError(
-            f"logger argument had unexpected type {type(loggerlike)}, expected {LOGGER_CLASS}")
+            f'logger argument had unexpected type {type(loggerlike)}, expected {LOGGER_CLASS}'
+        )
 
     if not isinstance(_logger, LOGGER_CLASS):
         raise ValueError(f'Unable to get logger {loggerlike}')

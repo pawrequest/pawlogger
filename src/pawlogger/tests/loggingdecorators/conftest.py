@@ -5,15 +5,15 @@ import pytest
 
 from pawlogger import DFLT_LOG_LEVEL
 
-ARG1 = "value 1 for test"
-ARG2 = "value 2 for test"
-DFLT_ARG1 = "default value 1"
-DFLT_ARG2 = "default value 2"
+ARG1 = 'value 1 for test'
+ARG2 = 'value 2 for test'
+DFLT_ARG1 = 'default value 1'
+DFLT_ARG2 = 'default value 2'
 
 
 @pytest.fixture
 def test_logger():
-    logger_name = "test_logger_" + str(uuid.uuid4())
+    logger_name = 'test_logger_' + str(uuid.uuid4())
     logger = logging.getLogger(logger_name)
     logger.setLevel(DFLT_LOG_LEVEL)
     yield logger
@@ -53,8 +53,8 @@ class DummyNewWithArgs(DummyClass):
 
 
 # todo move these
-INIT_MSG = f"init: {DummyClass.__name__}"
-NEW_MSG = f"new: {DummyClass.__name__}"
+INIT_MSG = f'init: {DummyClass.__name__}'
+NEW_MSG = f'new: {DummyClass.__name__}'
 
 
 def dummy_func(arg1, arg2):
@@ -62,7 +62,7 @@ def dummy_func(arg1, arg2):
 
 
 def dummy_func_noargs():
-    return "No args"
+    return 'No args'
 
 
 def dummy_func_kwargs(arg1, arg2, kwarg3, kwarg4_with_def=None):
@@ -91,7 +91,7 @@ def dummy_class_fxt():
 
 class DummyClassNoArgs:
     def __init__(self):
-        self.value = "No args init"
+        self.value = 'No args init'
 
     def __new__(cls):
         return super().__new__(cls)
