@@ -13,24 +13,26 @@ def configure_loguru(
     level: str = 'INFO',
     log_file: Path | None = None,
 ) -> loguru.Logger:
-    if logger is None:
+    if logger_ is None:
         from loguru import logger as logger_
     logger_.remove()
     lvl = level.upper()
     if log_file:
-        logger_.add(log_file, rotation='1 day', delay=True, encoding='utf8', level=lvl)
-    logger_.add(sys.stderr, level=lvl, format=log_fmt_local_terminal)
+        logger_.add(log_file, rotation='1 week', delay=True, encoding='utf8', level=lvl)
+    logger_.add(sys.stdout, level=lvl, format=log_fmt_local_terminal)
+    # logger_.add(sys.stderr, level=lvl, format=log_fmt_local_terminal)
+    logger_.info(f'Configured loguru with level {lvl} and log_file {log_file}')
 
     return logger_
 
 
 def log_fmt_local_terminal(record: loguru.Record) -> str:
-    file_txt = f'{record["file"].path}:{record["line"]}'
+    file_txt = f'"{record["file"].path}:{record["line"]}"'
+    # file_txt = f'"{record["file"].path}:{record["line"]}'
     lvltext = f'<lvl>{record["level"]: <7}</lvl>'
     msg_txt = f'<lvl>{record["message"]}</lvl>'
     msg_txt = msg_txt.replace('{', '{{').replace('}', '}}')
-    # msg_txt = f'{record['message']}'
-    return f'{file_txt} | {lvltext} | {msg_txt} \n'
+    return f'{lvltext} | {msg_txt} | {file_txt}\n'
 
 
 def logger_wraps(*, entries=True, exits=True, level='DEBUG') -> Callable:
@@ -56,4 +58,3 @@ if __name__ == '__main__':
     from loguru import logger
 
     configure_loguru(logger, level='DEBUG')
-    logger.debug('Configured loguru')
