@@ -9,10 +9,12 @@ import loguru
 
 
 def configure_loguru(
-    logger_: loguru.Logger,
+    logger_: loguru.Logger = None,
     level: str = 'INFO',
     log_file: Path | None = None,
 ) -> loguru.Logger:
+    if logger is None:
+        from loguru import logger as logger_
     logger_.remove()
     lvl = level.upper()
     if log_file:
