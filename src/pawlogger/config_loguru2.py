@@ -7,6 +7,8 @@ from typing import Callable
 
 import loguru
 
+from pawlogger.funcs import serializing_formatter
+
 
 def configure_loguru(
     logger_: loguru.Logger = None,
@@ -18,6 +20,8 @@ def configure_loguru(
     logger_.remove()
     lvl = level.upper()
     if log_file:
+        log_file.touch(exist_ok=True)
+        logger_.add(log_file, format=serializing_formatter)
         logger_.add(log_file, rotation='1 week', delay=True, encoding='utf8', level=lvl)
     logger_.add(sys.stdout, level=lvl, format=log_fmt_local_terminal)
     # logger_.add(sys.stderr, level=lvl, format=log_fmt_local_terminal)

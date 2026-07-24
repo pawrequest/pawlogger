@@ -1,4 +1,5 @@
 import copy
+import json
 import sys
 from typing import Any
 
@@ -29,22 +30,23 @@ def remove_keys_from_dict(data: Any, keys_to_remove: set[str]) -> Any:
     return data
 
 
+def serialize(record):
+    timestamp = record['time'].strftime('%Y-%m-%dT%H:%M:%S.%fZ')
+    exported = {'timestamp': timestamp, 'message': record['message'], **record['extra'], 'level': record['level'].name}
+    return json.dumps(exported)
+
+
+def serializing_formatter(record):
+    # Note this function returns the string to be formatted, not the actual message to be logged
+    record['extra']['serialized'] = serialize(record)
+    return '{extra[serialized]}\n'
+
+
 def configure_logging(ndjson_file):
     logger.remove()
 
-    logger.add(
-        sys.stderr,
-        level='DEBUG',
-        format='{time:YYYY-MM-DD HH:mm:ss} | {level} | {message} | {extra}',
-    )
-
-    logger.add(
-        ndjson_file,
-        level=0,
-        serialize=True,
-        rotation='10 MB',
-        retention=10,
-    )
+    logger.add(ndjson_file, format=serializing_formatter)
+    logger.add(sys.stderr, level='DEBUG', format=serializing_formatter)
 
 
 def normalize_log_value(value: Any) -> Any:
@@ -60,3 +62,11 @@ def log_event(message: str, *, level: str = 'INFO', event: str | None = None, **
     if event is not None:
         fields['event'] = event
     logger.bind(**fields).log(level.upper(), message)
+
+
+if __name__ == '__main__':
+    configure_logging('test.ndjson')
+    extra = {
+        'TEST': 'siomsoimnafhb',
+    }
+    logger.info('TESTIG', extra=extra)
