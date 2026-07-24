@@ -27,12 +27,12 @@ def configure_loguru(
 
 
 def log_fmt_local_terminal(record: loguru.Record) -> str:
-    file_txt = f'"{record["file"].path}:{record["line"]}"'
-    # file_txt = f'"{record["file"].path}:{record["line"]}'
-    lvltext = f'<lvl>{record["level"]: <7}</lvl>'
+    name_txt = f'<lvl>{record['name'].split('.')[0]}</lvl>'
+    lvltext = f'<lvl>{record["level"]}</lvl>'
     msg_txt = f'<lvl>{record["message"]}</lvl>'
+    file_txt = f'"{record["file"].path}:{record["line"]}"'
     msg_txt = msg_txt.replace('{', '{{').replace('}', '}}')
-    return f'{lvltext} | {msg_txt} | {file_txt}\n'
+    return f'{name_txt}({lvltext}) | {msg_txt} | {file_txt}\n'
 
 
 def logger_wraps(*, entries=True, exits=True, level='DEBUG') -> Callable:
