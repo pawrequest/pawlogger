@@ -5,14 +5,14 @@ from typing import Any
 from loguru import logger
 
 
-def remove_keys_from_dict(data: Any, keys_to_remove: set[str] | None = None) -> Any:
+def remove_keys_from_dict(data: Any, keys_to_remove: set[str]) -> Any:
     """
     Recursively removes specified keys from a nested dictionaries.
     """
 
     data = copy.deepcopy(data)
 
-    if isinstance(data, dict) and keys_to_remove:
+    if isinstance(data, dict):
         for key in list(data.keys()):
             if key in keys_to_remove:
                 logger.warning(f'Removing key: {key}')
