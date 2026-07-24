@@ -45,9 +45,7 @@ def test_on_class_init(caplog, logger_input):
 )
 def test_on_class_new(caplog, logger_input):
     logger_name, logger = logger_input
-    DecoratedClass = on_class(logger=logger, decorate_init=False, decorate_new=True)(
-        DummyNewWithArgs
-    )
+    DecoratedClass = on_class(logger=logger, decorate_init=False, decorate_new=True)(DummyNewWithArgs)
 
     with caplog.at_level(DFLT_LOG_LEVEL, logger=logger_name):
         instance = DecoratedClass(ARG1, ARG2)
@@ -90,9 +88,7 @@ def test_on_class_new(caplog, logger_input):
 #     assert expected_log in caplog.text
 
 
-@pytest.mark.parametrize(
-    'decorate_init, decorate_new', [(True, False), (False, True), (True, True)]
-)
+@pytest.mark.parametrize('decorate_init, decorate_new', [(True, False), (False, True), (True, True)])
 @pytest.mark.parametrize(
     'class_type, init_args',
     [
@@ -109,13 +105,9 @@ def test_on_class_new(caplog, logger_input):
         ('test_logger_callable', lambda: logging.getLogger('test_logger_callable')),
     ],
 )
-def test_on_class_various_types(
-    caplog, logger_input, class_type, init_args, decorate_init, decorate_new
-):
+def test_on_class_various_types(caplog, logger_input, class_type, init_args, decorate_init, decorate_new):
     logger_name, logger = logger_input
-    DecoratedClass = on_class(
-        logger=logger, decorate_init=decorate_init, decorate_new=decorate_new
-    )(class_type)
+    DecoratedClass = on_class(logger=logger, decorate_init=decorate_init, decorate_new=decorate_new)(class_type)
 
     with caplog.at_level(DFLT_LOG_LEVEL, logger=logger_name):
         instance = DecoratedClass(*init_args)

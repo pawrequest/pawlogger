@@ -113,9 +113,7 @@ def log_fmt_server_terminal(record) -> str:
     colour = CAT_COLOR_DICT.get(category, 'white')
 
     file_line = f'{record["file"]}:{record["line"]}- {record["function"]}()'
-    bot_says = (
-        f'<bold>{coloured(category, colour):<9} </bold> | {coloured(record["message"], colour)}'
-    )
+    bot_says = f'<bold>{coloured(category, colour):<9} </bold> | {coloured(record["message"], colour)}'
 
     return f'<lvl>{record["level"]: <7} </lvl>| {bot_says} | {file_line}\n'
 
