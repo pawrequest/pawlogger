@@ -40,7 +40,7 @@ def configure_logging(ndjson_file):
 
     logger.add(
         ndjson_file,
-        level='DEBUG',
+        level=0,
         serialize=True,
         rotation='10 MB',
         retention=10,
