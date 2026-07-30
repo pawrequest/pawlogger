@@ -1,14 +1,13 @@
-from .config_loguru import get_loguru
-from .config_loguru2 import configure_loguru
-from .config import get_logger
-from .consts import ASCTIME_PATTERN, CONSOLE_FORMAT_STR, FILE_FORMAT_STR, get_format_str
+from .config import ASCTIME_PATTERN, FILE_FORMAT_STR, get_logger
+from .config_loguru import (
+    configure_loguru,
+    log_fmt_local_terminal,
+)
 
 __all__ = [
-    'get_logger',
-    'get_loguru',
-    'ASCTIME_PATTERN',
-    'CONSOLE_FORMAT_STR',
-    'FILE_FORMAT_STR',
-    'get_format_str',
+    'log_fmt_local_terminal',
     'configure_loguru',
+    'ASCTIME_PATTERN',
+    'FILE_FORMAT_STR',
+    'get_logger',
 ]

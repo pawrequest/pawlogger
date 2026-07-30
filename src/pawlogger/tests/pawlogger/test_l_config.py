@@ -4,8 +4,7 @@ import re
 from pathlib import Path
 
 import pytest
-from pawlogger.consts import ASCTIME_PATTERN
-from pawlogger import get_logger
+from pawlogger import get_logger, ASCTIME_PATTERN
 
 test_params = [
     (logging.DEBUG, 'Debug message', 'DEBUG', [42]),

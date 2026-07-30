@@ -1,9 +1,7 @@
-from __future__ import annotations
-
 import functools
 import sys
 from pathlib import Path
-from typing import Literal
+from typing import Callable, Literal
 
 import loguru
 from loguru import logger
@@ -11,19 +9,16 @@ from loguru import logger
 """
 functions for configuring loguru
 """
-CAT_COLOR_DICT = {
-    'episode': 'cyan',
-    'reddit': 'green',
-    'backup': 'magenta',
-}
+
+CATEGORY_COLORS = {}
 
 
-def get_loguru(
+def configure_loguru(
     level: str = 'INFO',
     log_file: Path | None = None,
-    profile: Literal['local', 'remote', 'default'] = 'local',
+    profile: Literal['local'] = 'local',
     color_dict: dict | None = None,
-) -> logger:
+):
     """
     Configure loguru logger
 
@@ -33,15 +28,12 @@ def get_loguru(
     :return: logger
     """
     if color_dict:
-        global CAT_COLOR_DICT
-        CAT_COLOR_DICT = color_dict
+        color_dict = {k.lower(): v for k, v in color_dict.items()}
+        log_fmt_local_terminal.CATEGORY_COLORS = color_dict
 
     if profile == 'local':
         logger.info('Using local log profile')
         terminal_format = log_fmt_local_terminal
-    elif profile == 'remote':
-        logger.info('Using remote log profile')
-        terminal_format = log_fmt_server_terminal
     else:
         raise ValueError(f'Invalid profile: {profile}')
 
@@ -52,73 +44,8 @@ def get_loguru(
         logger.add(log_file, rotation='1 day', delay=True, encoding='utf8', level=lvl)
     logger.add(sys.stderr, level=lvl, format=terminal_format)
 
-    return logger
 
-
-# def log_fmt_local_terminal(record) -> str:
-#     """
-#     Format for local logging
-#
-#     :param record: log record
-#     :return: formatted log record
-#     """
-#     category = record['extra'].get('category', 'General')
-#     bot_colour = BOT_COLOR.get(category, 'white')
-#     category = f'{category:<9}'
-#     max_length = 100
-#     file_txt = f"{record['file'].path}:{record['line']}"
-#
-#     if len(file_txt) > max_length:
-#         file_txt = file_txt[:max_length]
-#
-#     # clickable link only works at start of line
-#     return f"{file_txt:<{max_length}} | <lvl>{record['level']: <7} | {coloured(category, bot_colour)} | {record['message']}</lvl>\n"
-
-
-def log_fmt_local_terminal(record: loguru.Record) -> str:
-    file_txt = f'{record["file"].path}:{record["line"]}'
-
-    category = record['extra'].get('category', 'General')
-    category_txt = f'{category.title():<9}'
-
-    color = CAT_COLOR_DICT.get(category.lower(), 'white')
-    category_txt = f'| {coloured(category_txt, color)}' if category_txt != 'General' else ''
-    lvltext = f'<lvl>{record["level"]: <7}</lvl>'
-    msg_txt = f'<lvl>{record["message"]}</lvl>'
-    msg_txt = msg_txt.replace('{', '{{').replace('}', '}}')
-    # msg_txt = f'{record['message']}'
-    return f'{lvltext} {category_txt} | {msg_txt} | {file_txt}\n'
-
-
-def coloured(msg: str, colour: str) -> str:
-    """
-    Colour a message
-
-    :param msg: message to colour
-    :param colour: colour to use
-    :return: coloured message
-    """
-    return f'<{colour}>{msg}</{colour}>'
-
-
-def log_fmt_server_terminal(record) -> str:
-    """
-    Format for server-side logging
-
-    :param record: log record
-    :return: formatted log record
-    """
-    category = record['extra'].get('category', 'General')
-    category = f'{category:<9}'
-    colour = CAT_COLOR_DICT.get(category, 'white')
-
-    file_line = f'{record["file"]}:{record["line"]}- {record["function"]}()'
-    bot_says = f'<bold>{coloured(category, colour):<9} </bold> | {coloured(record["message"], colour)}'
-
-    return f'<lvl>{record["level"]: <7} </lvl>| {bot_says} | {file_line}\n'
-
-
-def logger_wraps(*, entries=True, exits=True, level='DEBUG') -> callable:
+def logger_wraps(*, entries=True, exits=True, level='DEBUG') -> Callable:
     """
     Decorator to log function entry and exit
 
@@ -144,3 +71,29 @@ def logger_wraps(*, entries=True, exits=True, level='DEBUG') -> callable:
         return wrapped
 
     return wrapper
+
+
+def log_fmt_local_terminal(record: loguru.Record) -> str:
+    lvltext = wrapped_fmt_str(f'{record["level"]: <7}', 'lvl')
+    category = record['extra'].get('category', '')
+    category = f'{category.title():<9}'
+    color = CATEGORY_COLORS.get(category.lower(), None)
+    if category:
+        category = f' | {category}'
+        if isinstance(color, str):
+            category = f' | {wrapped_fmt_str(category, color)}'
+    msg = wrapped_fmt_str(record['message'], 'lvl')
+    msg = msg.replace('{', '{{').replace('}', '}}')
+    link_path = f'{record["file"].path}:{record["line"]}'
+    return f'{lvltext}{category} | {msg} | {link_path}\n'
+
+
+def wrapped_fmt_str(msg: str, tag: str) -> str:
+    """
+    Wrap a message with a tag
+
+    :param msg: message to wrap
+    :param tag: tag to use
+    :return: wrapped message
+    """
+    return f'<{tag}>{msg}</{tag}>'
