@@ -29,7 +29,8 @@ def configure_loguru(
     """
     if color_dict:
         color_dict = {k.lower(): v for k, v in color_dict.items()}
-        log_fmt_local_terminal.CATEGORY_COLORS = color_dict
+        global CATEGORY_COLORS
+        CATEGORY_COLORS = color_dict
 
     if profile == 'local':
         logger.info('Using local log profile')
