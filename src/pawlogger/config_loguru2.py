@@ -11,9 +11,9 @@ from pawlogger.funcs import serializing_formatter
 
 
 def configure_loguru(
-    logger_: loguru.Logger = None,
-    level: str = 'INFO',
-    log_file: Path | None = None,
+        logger_: loguru.Logger = None,
+        level: str = 'INFO',
+        log_file: Path | None = None,
 ) -> loguru.Logger:
     if logger_ is None:
         from loguru import logger as logger_
@@ -21,7 +21,7 @@ def configure_loguru(
     lvl = level.upper()
     if log_file:
         log_file.touch(exist_ok=True)
-        logger_.add(log_file, format=serializing_formatter)
+        logger_.add(log_file.with_suffix('.ndjson'), rotation='iweek', delay=True, format=serializing_formatter)
         logger_.add(log_file, rotation='1 week', delay=True, encoding='utf8', level=lvl)
     logger_.add(sys.stdout, level=lvl, format=log_fmt_local_terminal)
     # logger_.add(sys.stderr, level=lvl, format=log_fmt_local_terminal)
