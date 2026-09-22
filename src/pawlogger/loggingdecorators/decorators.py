@@ -36,7 +36,9 @@ def on_call(
             logger.debug(f'logger {logger.name}')
 
             if not isinstance(_logger, LOGGER_CLASS):
-                raise TypeError(f'logger argument had unexpected type {type(_logger)}, expected {LOGGER_CLASS}')
+                raise TypeError(
+                    f'logger argument had unexpected type {type(_logger)}, expected {LOGGER_CLASS}'
+                )
 
             result = func(*args, **kwargs)
             if logargs:
@@ -127,12 +129,16 @@ def on_class[T](
 
         if decorate_init and hasattr(cls, '__init__'):
             original_init = cls.__init__
-            wrapped_init = on_call(logger, level, logargs, logdefaults, depth=depth + 1)(original_init)
+            wrapped_init = on_call(logger, level, logargs, logdefaults, depth=depth + 1)(
+                original_init
+            )
             cls.__init__ = wrapped_init
 
         if decorate_new and hasattr(cls, '__new__'):
             original_new = cls.__new__
-            wrapped_new = on_call(logger, level, logargs, logdefaults, depth=depth + 1)(original_new)
+            wrapped_new = on_call(logger, level, logargs, logdefaults, depth=depth + 1)(
+                original_new
+            )
             cls.__new__ = wrapped_new
 
         return cls
@@ -175,7 +181,9 @@ def log_agnostic(
         raise ValueError('if logargs then provide them')
     args, kwargs = args or (), kwargs or {}
     if logargs:
-        bound_arguments = get_bound(obj=obj, use_new=use_new, logdefault=logdefaults, args=args, kwargs=kwargs)
+        bound_arguments = get_bound(
+            obj=obj, use_new=use_new, logdefault=logdefaults, args=args, kwargs=kwargs
+        )
         log_msg = build_log_msg(obj, args=bound_arguments.arguments, use_new=use_new)
     else:
         log_msg = build_log_msg(obj, logargs=False, use_new=use_new)
@@ -196,7 +204,9 @@ def _get_logger(objec, loggerlike: LOGGER_LIKE):
         _logger = loggerlike()
 
     else:
-        raise TypeError(f'logger argument had unexpected type {type(loggerlike)}, expected {LOGGER_CLASS}')
+        raise TypeError(
+            f'logger argument had unexpected type {type(loggerlike)}, expected {LOGGER_CLASS}'
+        )
 
     if not isinstance(_logger, LOGGER_CLASS):
         raise ValueError(f'Unable to get logger {loggerlike}')

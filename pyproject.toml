@@ -5,13 +5,13 @@ build-backend = "uv_build"
 
 [project]
 name = "pawlogger"
-version = "0.1.7"
+version = "0.1.9"
 description = "logging tools"
 authors = [
     { name = "paw", email = "pawrequest@users.noreply.github.com" }
 ]
 readme = "README.md"
-requires-python = ">= 3.8"
+requires-python = ">= 3.13"
 dependencies = [
     'loguru',
 ]
