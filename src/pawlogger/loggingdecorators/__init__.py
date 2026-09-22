@@ -2,7 +2,7 @@
 import sys
 
 from .decorators import on_call, on_class
-from .legacy import on_init, on_new, on_init_og, on_call_og
+from .legacy import on_call_og, on_init, on_init_og, on_new
 
 # if sys.version_info >= (3, 12):
 #     from pawlogger.future.on_new_dec_312 import on_new

@@ -2,8 +2,8 @@ from __future__ import annotations
 
 import functools
 import sys
+from collections.abc import Callable
 from pathlib import Path
-from typing import Callable
 
 import loguru
 
@@ -21,7 +21,7 @@ def configure_loguru(
     lvl = level.upper()
     if log_file:
         log_file.touch(exist_ok=True)
-        logger_.add(log_file.with_suffix('.ndjson'), rotation='iweek', delay=True, format=serializing_formatter)
+        logger_.add(log_file.with_suffix('.ndjson'), rotation='1 week', delay=True, format=serializing_formatter)
         logger_.add(log_file, rotation='1 week', delay=True, encoding='utf8', level=lvl)
     logger_.add(sys.stdout, level=lvl, format=log_fmt_local_terminal)
     # logger_.add(sys.stderr, level=lvl, format=log_fmt_local_terminal)
@@ -31,7 +31,7 @@ def configure_loguru(
 
 
 def log_fmt_local_terminal(record: loguru.Record) -> str:
-    name_txt = f'<lvl>{record['name'].split('.')[0]}</lvl>'
+    name_txt = f'<lvl>{record["name"].split(".")[0]}</lvl>'
     lvltext = f'<lvl>{record["level"]}</lvl>'
     msg_txt = f'<lvl>{record["message"]}</lvl>'
     file_txt = f'"{record["file"].path}:{record["line"]}"'

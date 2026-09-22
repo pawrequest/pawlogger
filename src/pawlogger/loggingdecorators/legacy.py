@@ -1,7 +1,7 @@
 import inspect
 import logging
+from collections.abc import Callable
 from functools import wraps
-from typing import Callable, Union
 
 from .consts_formats import DFLT_LOGGER_STR, LOGGER_CLASS, LOGGER_LIKE
 from .decorators import _get_logger, log_agnostic
@@ -9,9 +9,7 @@ from .decorators import _get_logger, log_agnostic
 loggerClass = logging.getLoggerClass()
 
 
-def on_call_og(
-    logger: Union[loggerClass, Callable], level=logging.DEBUG, logargs=True, msg: str = '', depth=0
-):
+def on_call_og(logger: loggerClass | Callable, level=logging.DEBUG, logargs=True, msg: str = '', depth=0):
     """
     When applied to a function, decorate it with a wrapper which logs the call using the given logger at the specified
     level.
@@ -31,7 +29,7 @@ def on_call_og(
         if not callable(func):
             raise TypeError(f'{func} does not appear to be callable.')
 
-        if getattr(func, '__name__') == '__repr__':
+        if func.__name__ == '__repr__':
             raise RuntimeError('Cannot apply to __repr__ as this will cause infinite recursion!')
 
         @wraps(func)
@@ -39,9 +37,7 @@ def on_call_og(
             _logger = logger() if inspect.isfunction(logger) else logger
 
             if not isinstance(_logger, loggerClass):
-                raise TypeError(
-                    f'logger argument had unexpected type {type(_logger)}, expected {loggerClass}'
-                )
+                raise TypeError(f'logger argument had unexpected type {type(_logger)}, expected {loggerClass}')
 
             content = f'calling {func} with {len(args)} arg(s) and {len(kwargs)} kwarg(s) '
             if msg:
@@ -51,9 +47,7 @@ def on_call_og(
                 for n, arg in enumerate(args):
                     _logger.log(level, f' - arg {n:>2}: {type(arg)} {arg}', stacklevel=total_depth)
                 for m, (key, item) in enumerate(kwargs.items()):
-                    _logger.log(
-                        level, f' - kwarg {m:>2}: {type(item)} {key}={item}', stacklevel=total_depth
-                    )
+                    _logger.log(level, f' - kwarg {m:>2}: {type(item)} {key}={item}', stacklevel=total_depth)
             return func(*args, **kwargs)
 
         return wrapper
@@ -61,9 +55,7 @@ def on_call_og(
     return decorator
 
 
-def on_init_og(
-    logger: Union[str, loggerClass, Callable] = 'logger', level=logging.DEBUG, logargs=True, depth=0
-):
+def on_init_og(logger: str | loggerClass | Callable = 'logger', level=logging.DEBUG, logargs=True, depth=0):
     """
     When applied to a class or an __init__ method, decorate it with a wrapper which logs the __init__ call using the
     given logger at the specified level.
@@ -88,22 +80,16 @@ def on_init_og(
 
         is_class = inspect.isclass(constructor)
 
-        to_call = getattr(constructor, '__init__') if is_class else constructor
+        to_call = constructor.__init__ if is_class else constructor
 
         @wraps(constructor)
         def init_wrapper(self, *args, **kwargs):
             _logger = (
-                getattr(self, logger)
-                if isinstance(logger, str)
-                else logger()
-                if inspect.isfunction(logger)
-                else logger
+                getattr(self, logger) if isinstance(logger, str) else logger() if inspect.isfunction(logger) else logger
             )
 
             if not isinstance(_logger, loggerClass):
-                raise TypeError(
-                    f'logger argument had unexpected type {type(_logger)}, expected {loggerClass}'
-                )
+                raise TypeError(f'logger argument had unexpected type {type(_logger)}, expected {loggerClass}')
 
             if logargs:
                 _logger.log(
@@ -117,7 +103,7 @@ def on_init_og(
             to_call(self, *args, **kwargs)
 
         if is_class:
-            setattr(constructor, '__init__', init_wrapper)
+            constructor.__init__ = init_wrapper
             return constructor
         else:
             return init_wrapper
@@ -153,9 +139,7 @@ def on_init[T](
             if logargs:
                 log_agnostic(_logger, args, kwargs, self, logdefaults, level, total_depth)
             else:
-                log_agnostic(
-                    _logger, obj=self, logdefaults=logdefaults, logargs=False, use_new=use_new
-                )
+                log_agnostic(_logger, obj=self, logdefaults=logdefaults, logargs=False, use_new=use_new)
                 # log_object(_logger, classname, level, total_depth, 'init')
             return result
 
@@ -209,7 +193,7 @@ def on_new(
             return original_thing(cls, *args, **kwargs)
 
         if inspect.isclass(constructor):
-            setattr(constructor, '__new__', wrapper)
+            constructor.__new__ = wrapper
         else:
             constructor = wrapper
 
@@ -260,8 +244,7 @@ def format_bound_args(bound_arguments, logdefaults):
     if logdefaults:
         bound_arguments.apply_defaults()
     formatted_args = ', '.join(
-        f'{k}={v.__class__.__name__ if k == "self" or v == "cls" else v}'
-        for k, v in bound_arguments.arguments.items()
+        f'{k}={v.__class__.__name__ if k == "self" or v == "cls" else v}' for k, v in bound_arguments.arguments.items()
     )
     return formatted_args
 
@@ -271,8 +254,6 @@ def log_object_cl(_logger: LOGGER_CLASS, callable_name: str, level, depth, forma
     _logger.log(level, f'{callable_name}({formatted_args})', stacklevel=depth)
 
 
-def log_object(
-    _logger: LOGGER_CLASS, classname: str, level, depth, msg_prefix: str, formatted_args=None
-):
+def log_object(_logger: LOGGER_CLASS, classname: str, level, depth, msg_prefix: str, formatted_args=None):
     formatted_args = formatted_args or ''
     _logger.log(level, f'{msg_prefix}: {classname}({formatted_args})', stacklevel=depth)

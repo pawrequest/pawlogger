@@ -1,6 +1,7 @@
 import inspect
 import logging
-from typing import Callable, Union
+from collections.abc import Callable
+from typing import Union
 
 DFLT_LOGGER_STR = 'DEFAULT_LOGGER_STR'
 DFLT_LOG_LEVEL = logging.DEBUG

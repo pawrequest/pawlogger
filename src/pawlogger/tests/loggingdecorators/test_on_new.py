@@ -3,10 +3,9 @@ import copy
 import logging
 
 import pytest
+from tests.loggingdecorators.conftest import ARG1, ARG2, DFLT_ARG1, DFLT_ARG2, NEW_MSG, DummyClass
 
-from pawlogger import on_new
-from pawlogger import DFLT_LOGGER_STR, DFLT_LOG_LEVEL
-from tests.loggingdecorators.conftest import ARG1, ARG2, DFLT_ARG1, DFLT_ARG2, DummyClass, NEW_MSG
+from pawlogger import DFLT_LOG_LEVEL, DFLT_LOGGER_STR, on_new
 
 
 def test_with_logger_object(caplog, test_logger, dummy_class_fxt):

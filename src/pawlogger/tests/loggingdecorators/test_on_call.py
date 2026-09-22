@@ -2,9 +2,6 @@ import copy
 import logging
 
 import pytest
-
-from pawlogger import DFLT_LOGGER_STR, DFLT_LOG_LEVEL, build_log_msg
-from pawlogger.loggingdecorators.decorators import on_call
 from tests.loggingdecorators.conftest import (
     ARG1,
     ARG2,
@@ -12,6 +9,9 @@ from tests.loggingdecorators.conftest import (
     dummy_func_kwargs,
     dummy_func_noargs,
 )
+
+from pawlogger import DFLT_LOG_LEVEL, DFLT_LOGGER_STR, build_log_msg
+from pawlogger.loggingdecorators.decorators import on_call
 
 
 @pytest.mark.parametrize(

@@ -1,7 +1,8 @@
 import functools
 import sys
+from collections.abc import Callable
 from pathlib import Path
-from typing import Callable, Literal
+from typing import Literal
 
 import loguru
 from loguru import logger

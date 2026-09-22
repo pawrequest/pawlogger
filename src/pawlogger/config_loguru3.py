@@ -3,17 +3,18 @@ from __future__ import annotations
 import functools
 import json
 import sys
+from collections.abc import Callable
 from datetime import timedelta
 from pathlib import Path
-from typing import Callable
+
 from loguru import logger
 
 
 def loguru_ndjson_and_terminal(
-        level: str = 'INFO',
-        log_file: Path | None = None,
-        rotation: timedelta = timedelta(weeks=1),
-        retention: timedelta = timedelta(weeks=8),
+    level: str = 'INFO',
+    log_file: Path | None = None,
+    rotation: timedelta = timedelta(weeks=1),
+    retention: timedelta = timedelta(weeks=8),
 ):
     logger.remove()
     lvl = level.upper()

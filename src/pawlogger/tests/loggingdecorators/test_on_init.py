@@ -1,10 +1,9 @@
 import logging
 
 import pytest
-
-from pawlogger import on_init
-from pawlogger import DFLT_LOGGER_STR, DFLT_LOG_LEVEL
 from tests.loggingdecorators.conftest import ARG1, ARG2, DFLT_ARG1, DummyClass
+
+from pawlogger import DFLT_LOG_LEVEL, DFLT_LOGGER_STR, on_init
 
 
 def test_on_init_dflt(caplog):
@@ -50,9 +49,8 @@ def test_on_init_with_exception(caplog, test_logger):
 
     decorated_class = on_init(logger=test_logger)(DummyClassExcepts)
 
-    with caplog.at_level(logging.DEBUG, logger=test_logger.name):
-        with pytest.raises(ValueError):
-            instance = decorated_class(ARG1)  # noqa: F841
+    with caplog.at_level(logging.DEBUG, logger=test_logger.name), pytest.raises(ValueError):
+        instance = decorated_class(ARG1)  # noqa: F841
 
 
 def test_on_init_with_depth(caplog, test_logger):
